@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Glassguide::VERSION
   gem.authors       = ["fmarais"]
   gem.email         = ["fm.marais@gmail.com"]
-  gem.description   = %q{Vehicle info Au}
-  gem.summary       = %q{Vehicle info Au, pricing ect}
+  gem.description   = %q{TODO Vehicle info Au}
+  gem.summary       = %q{TODO Vehicle info Au, pricing ect}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)

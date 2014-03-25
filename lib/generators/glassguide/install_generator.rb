@@ -13,6 +13,7 @@ module Glassguide
       def copy_migration
         template "migration_existing.rb", "db/migrate/#{Time.now.strftime("%Y%m%d%H%M%S")}_add_glassguide_tables.rb"
       end    
+
     end
   end
 end

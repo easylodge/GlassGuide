@@ -7,7 +7,7 @@ module Glassguide
       def copy_config
        template "glassguide_config.yml", "config/glassguide_config.yml"
       end
-    
+   
     end
   end
 end

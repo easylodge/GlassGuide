@@ -1,7 +1,7 @@
 class CreateGlassguideOptions < ActiveRecord::Migration
   def self.up
     create_table :glassguide_options ,id: false do |t|
-      t.integer :id ,null: false
+      t.integer :id
       t.string :vehicle_code
       t.string :option_code
       t.string :nvic

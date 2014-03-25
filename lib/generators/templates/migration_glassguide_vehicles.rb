@@ -1,8 +1,8 @@
 class CreateGlassguideVehicles < ActiveRecord::Migration
   def self.up
     create_table :glassguide_vehicles,id: false do |t|
-      t.integer :id ,null: false
-      t.string  :code
+      t.integer :id 
+      t.string  :code, null: true
       t.string  :nvic
       t.string  :mth
       t.string  :year

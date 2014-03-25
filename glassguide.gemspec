@@ -6,8 +6,8 @@ require 'glassguide/version'
 Gem::Specification.new do |gem|
   gem.name          = "glassguide"
   gem.version       = Glassguide::VERSION
-  gem.authors       = ["fmarais"]
-  gem.email         = ["fm.marais@gmail.com"]
+  gem.authors       = ["-"]
+  gem.email         = ["-"]
   gem.description   = %q{Vehicle info Au}
   gem.summary       = %q{Vehicle info Au, pricing ect}
   gem.homepage      = ""

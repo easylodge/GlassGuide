@@ -1,3 +1,5 @@
-Glass_Guide_URL:
-Glass_guide_login: {:username => '', :password => ''}
-Image_Directory:
+glassguide_URL:
+image_directory:
+glassguide_login:
+    - {username: '', password: '' }
+    - {username: '', password: '' }

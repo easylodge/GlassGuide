@@ -13,6 +13,8 @@ module Glassguide
       find(:all, :group => 'year', :select => 'year')
     end
 
+
+    scope :motorcycle, -> { where(motorcycle: true) }
     # scope :makes, :select => 'DISTINCT(`glasses_vehicles`.`make`)', :order => 'make ASC'
     # scope :families, :select => 'DISTINCT(`glasses_vehicles`.`family`)', :order => 'family ASC'
     # scope :variants, :select => 'DISTINCT(`glasses_vehicles`.`variant`)', :order => 'variant ASC'

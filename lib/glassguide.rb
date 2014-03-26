@@ -7,8 +7,4 @@ require "glassguide/option_value"
 require "glassguide/option"
 require "glassguide/option_detail"
 
-module Glassguide
-  
-  # Your code goes here...
-
-end
+require 'glassguide/railtie' if defined?(Rails)

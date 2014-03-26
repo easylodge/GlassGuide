@@ -1,11 +1,11 @@
 require "active_record"
 require "glassguide/version"
 require "glassguide/vehicle"
-require "glassguide/kilometres_vehicle"
-require "glassguide/kilometres"
+require "glassguide/kilometre_vehicle"
+require "glassguide/kilometre"
 require "glassguide/option_value"
 require "glassguide/option"
-require "glassguide/options_description"
+require "glassguide/option_detail"
 
 module Glassguide
   

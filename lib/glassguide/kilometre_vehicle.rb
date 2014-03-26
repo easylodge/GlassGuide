@@ -1,6 +1,6 @@
 module Glassguide
-  class KilometresVehicle < ActiveRecord::Base
-    self.table_name = "glassguide_kilometres_vehicles"
+  class KilometerVehicle < ActiveRecord::Base
+    self.table_name = "glassguide_kilometer_vehicles"
     self.primary_key = :code
     
     # def custom_primary_key=(val)

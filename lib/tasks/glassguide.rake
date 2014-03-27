@@ -38,24 +38,16 @@ namespace :glassguide do
             p "Download Succesful!"
 
             p "Unzipping #{filename}"
-            %x{unzip "#{file_path}" -d "#{glassguide_details['image_directory']}/Photo_Unzip/"}
-            unzipped_folder = Pathname.new("#{Rails.root}/#{glassguide_details['image_directory']}/Photo_Unzip/")
+
+            %x{mkdir -p "#{Rails.root}/#{glassguide_details['image_directory']}"}
+            %x{unzip "#{file_path}" -d "#{Rails.root}/#{glassguide_details['image_directory']}"}
+            unzipped_folder = Pathname.new("#{Rails.root}/#{glassguide_details['image_directory']}")
             if unzipped_folder.exist?
               p "Unzip OK!"
-
-              files = Dir.glob("#{unzipped_folder}*")
-              file_count = files.count
-
-              p "Saving [#{file_count}] glass guide images to the image save location"
-              files.each_with_index do |file,index|
-                # p "[#{index+1} of #{file_count}] https://s3.amazonaws.com/storage.easylodge.com.au/easylodge/public/glasses/#{file.split('/').last}"
-                # %x{s3cmd put --acl-public #{file} s3://storage.easylodge.com.au/easylodge/public/glasses/}
-              end
               p "Save Succesful!"
 
-              p "Removing extracted folder and downloaded zip file"
+              p "Removing downloaded zip file"
               %x{rm "#{filename}"}
-              %x{rm -rf "#{glassguide_details['image_directory']}/Photo_Unzip"}
               p "All Done!"
             else
               p "Unzip Fail"
@@ -73,16 +65,14 @@ namespace :glassguide do
   end
 
   desc 'Downloads the most recent data zip files, unzip and merge'
-  task :get_data => :environment do
-
-    ftp_servers = {:username => 'apf_ftp', :password => 'x77ea7o'},
-              {:username => 'equis_ftp', :password => 'cwBVdsQq'}
+  task :get_import_data => :environment do
+    glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
 
     # downloading required files
-    ftp_servers.each do |fs|
-      ftp = Net::FTP.new('ftp.glassguide.com.au')
-      if ftp.login(fs[:username],fs[:password])
-        p "Logged in to ftp.glassguide.com.au (#{fs[:username]})"
+    glassguide_details["glassguide_login"].each do |glassguide_login|
+      ftp = Net::FTP.new(glassguide_details["glassguide_url"])
+      if ftp.login(glassguide_login["username"],glassguide_login["password"])
+        p "Logged in to ftp.glassguide.com.au (#{glassguide_login['username']})"
         filename = Date.today.strftime("%b%y") + "eis.zip"
         remote_file = ftp.nlst.reject{|r| r != filename}.first
         if remote_file
@@ -93,9 +83,9 @@ namespace :glassguide do
           if zip_file_path.exist?
             p "Download OK!"
 
-            p "Unzipping #{filename} to #{filename.split('.').first}_#{fs[:username]}"
-            %x{unzip "#{zip_file_path}" -d "#{filename.split('.').first}_#{fs[:username]}"}
-            unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{fs[:username]}/")
+            p "Unzipping #{filename} to #{filename.split('.').first}_#{glassguide_login['username']}"
+            %x{unzip "#{zip_file_path}" -d "#{filename.split('.').first}_#{glassguide_login['username']}"}
+            unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{glassguide_login['username']}/")
 
             if unzipped_folder.exist?
               p "Unzip OK!"
@@ -115,17 +105,17 @@ namespace :glassguide do
       end
 
       ftp.close
-      p "Closing connection ftp.glassguide.com.au (#{fs[:username]})"
+      p "Closing connection ftp.glassguide.com.au (#{glassguide_login['username']})"
     end
 
     # merging downloaded files
-    first_folder_name = Date.today.strftime('%b%y') + "eis_#{ftp_servers.first[:username]}"
+    first_folder_name = Date.today.strftime('%b%y') + "eis_#{glassguide_details['glassguide_login'].first['username']}"
     first_folder_path = Pathname.new("#{Rails.root}/#{first_folder_name}")
 
     p "Combining files"
-    ftp_servers.each_with_index do |fs,index|
+    glassguide_details["glassguide_login"].each_with_index do |glassguide_login,index|
       unless index == 0 # copy all files to folder #1
-        current_folder = Date.today.strftime("%b%y") + "eis_#{fs[:username]}"
+        current_folder = Date.today.strftime("%b%y") + "eis_#{glassguide_login['username']}"
         current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
 
         if current_folder_path.exist? && first_folder_path
@@ -147,16 +137,14 @@ namespace :glassguide do
     %x{rm -rf "#{first_folder_name}"}
 
     ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
-  end
+    
 
-  desc 'Import glass guide, specify with FILENAME=example.zip'
-  task :import_data => :environment do
-    raise 'FILENAME not specified' if ENV['FILENAME'].blank?
-    gp = Object.new.send :extend, Glasses::Package
+    
+    gp = Object.new.send :extend, Glassguide::Package
 
     puts 'Extracting zip'
     extracted_zip = gp.extract_zip_to_tempdir ENV['FILENAME']
-    Glasses::Loader.new extracted_zip, true
+    Glassguide::Loader.new extracted_zip, true
 
     %x{rm "#{ENV['FILENAME']}"}
     puts 'Done!'

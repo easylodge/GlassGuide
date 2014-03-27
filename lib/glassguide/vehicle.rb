@@ -24,14 +24,19 @@ module Glassguide
     # # By scopes
 
     
-    scope :by_year ,->(year) {where((year == 'New') ? ['price_new IS NOT NULL'] : ['year = ? ', year])}
-    scope :by_make ,->(make) {where(:make => make)}    
-    scope :by_family ,->(family) {where("family=?", family)}    
-    scope :by_variant ,->(variant) {where(:variant => variant)}    
-    scope :by_style ,->(style) {where(:style => style)}    
-    scope :by_transmission ,->(transmission) {where(:transmission => transmission)}    
-    scope :by_family ,->(series) {where(:series => series)}    
-    scope :by_engine ,->(engine) {where(:engine => engine)}  
+    scope :select_year ,->(year) {where((year.to_s == 'New') ? ['price_new IS NOT NULL'] : ['year = ? ', year.to_s])}
+    scope :select_make ,->(make) {where(:make => make)}    
+    scope :select_families ,->(family) {where("family=?", family)}    
+    scope :select_variants ,->(variant) {where(:variant => variant)}    
+    scope :select_styles ,->(style) {where(:style => style)}    
+    scope :select_transmission ,->(transmission) {where(:transmission => transmission)}    
+    scope :select_series ,->(series) {where(:series => series)}    
+    scope :select_engines ,->(engine) {where(:engine => engine)}  
+
+    def self.makes(make)
+      return self.select_make(make).uniq
+    end  
+    
     
     # scope :by_vehicle_type, lambda { |vehicle_type| { :conditions => {:motorcycle => (vehicle_type.downcase == 'motorcycle')} } }
 

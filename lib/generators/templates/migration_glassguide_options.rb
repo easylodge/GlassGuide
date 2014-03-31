@@ -3,7 +3,7 @@ class CreateGlassguideOptions < ActiveRecord::Migration
     create_table :glassguide_options ,id: false do |t|
       t.integer :id
       t.string :vehicle_code
-      t.string :option_code
+      t.string :option_codes
       t.string :nvic
       t.string :rec_type
       t.timestamps

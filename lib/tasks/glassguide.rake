@@ -24,43 +24,42 @@ namespace :glassguide do
     
 
     ftp = Net::FTP.new(glassguide_details["glassguide_url"])
-    glassguide_details["glassguide_login"].each do |glassguide_login|
-      if ftp.login(glassguide_login["username"],glassguide_login["password"])
-        p "Logged in to #{glassguide_details['glassguide_url']}"
-        filename = "Photo_" + Date.today.strftime("%b%y") + ".zip"
-        remote_file = ftp.nlst.reject{|r| r != filename}.first
-        if remote_file
-          p "Downloading #{filename} (#{remote_file.size*1024}kb)"
-          ftp.getbinaryfile(filename)
+    glassguide_login = glassguide_details["glassguide_login"].first
+    if ftp.login(glassguide_login["username"],glassguide_login["password"])
+      p "Logged in to #{glassguide_details['glassguide_url']}"
+      filename = "Photo_" + Date.today.strftime("%b%y") + ".zip"
+      remote_file = ftp.nlst.reject{|r| r != filename}.first
+      if remote_file
+        p "Downloading #{filename} (#{remote_file.size*1024}kb)"
+        ftp.getbinaryfile(filename)
 
-          file_path = Pathname.new("#{Rails.root}/#{filename}")
-          if file_path.exist?
-            p "Download Succesful!"
+        file_path = Pathname.new("#{Rails.root}/#{filename}")
+        if file_path.exist?
+          p "Download Succesful!"
 
-            p "Unzipping #{filename}"
+          p "Unzipping #{filename}"
 
-            %x{mkdir -p "#{Rails.root}/#{glassguide_details['image_directory']}"}
-            %x{unzip "#{file_path}" -d "#{Rails.root}/#{glassguide_details['image_directory']}"}
-            unzipped_folder = Pathname.new("#{Rails.root}/#{glassguide_details['image_directory']}")
-            if unzipped_folder.exist?
-              p "Unzip OK!"
-              p "Save Succesful!"
+          %x{mkdir -p "#{Rails.root}/#{glassguide_details['image_directory']}"}
+          %x{unzip "#{file_path}" -d "#{Rails.root}/#{glassguide_details['image_directory']}"}
+          unzipped_folder = Pathname.new("#{Rails.root}/#{glassguide_details['image_directory']}")
+          if unzipped_folder.exist?
+            p "Unzip OK!"
+            p "Save Succesful!"
 
-              p "Removing downloaded zip file"
-              %x{rm "#{filename}"}
-              p "All Done!"
-            else
-              p "Unzip Fail"
-            end
+            p "Removing downloaded zip file"
+            %x{rm "#{filename}"}
+            p "All Done!"
           else
-            p "Download Failed!"
+            p "Unzip Fail"
           end
         else
-          p "#{filename} not found on ftp server"
+          p "Download Failed!"
         end
       else
-        p "Ftp login has failed"
+        p "#{filename} not found on ftp server"
       end
+    else
+      p "Ftp login has failed"
     end
   end
 

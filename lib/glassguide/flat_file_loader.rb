@@ -116,7 +116,7 @@ module Glassguide
         when ".KAT" #glass's code, km category, average kms, nvic
           import_file file, GLASS_KILOMETRES_VEHICLE, :find_or_create, [:nvic],
             :rename_fields => {
-              :"glass's_code" => :custom_primary_key,
+              :"glass's_code" => :code,
               :"average_kms" => :average_kilometres_in_thousands,
             }
 
@@ -140,7 +140,7 @@ module Glassguide
               :"$$" => :'price_trade_in',
               :"$$$" => :'price_dealer_retail',
               :"cyl." => :cyl,
-              :code => :custom_primary_key, # Get around the no mass assignment on primary key issue
+              :code => :code, # Get around the no mass assignment on primary key issue
 
               # old car database
               :'b/av.' => :'price_trade_low',
@@ -165,7 +165,7 @@ module Glassguide
           :rename_fields => {
             :new_pr => :'price_new',
             :"cyl." => :cyl,
-            :code => :custom_primary_key, # Get around the no mass assignment on primary key issue
+            :code => :code, # Get around the no mass assignment on primary key issue
           }
       end
     end

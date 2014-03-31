@@ -9,6 +9,10 @@ module Glassguide
       def copy_config
         template "glassguide_config.yml", "config/glassguide_config.yml"
       end
+
+      def copy_array_extension
+        template "array_extensions.rb", "config/initializers/array_extensions.rb"
+      end
       
       def self.next_migration_number(dirname)
         if ActiveRecord::Base.timestamped_migrations

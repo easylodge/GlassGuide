@@ -27,7 +27,7 @@ class CreateGlassguideVehicles < ActiveRecord::Migration
       t.string  :tt
       t.boolean :motorcycle
       t.string  :valve_gear
-      t.string  :bore_stroke
+      t.string  :borexstroke
       t.string  :kw
       t.string  :comp_ratio
       t.string  :engine_cooling

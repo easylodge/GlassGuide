@@ -4,7 +4,7 @@ class CreateGlassguideKilometers < ActiveRecord::Migration
       t.integer :id, null: true
       t.string  :km_category
       t.string  :over_under
-      t.string  :up_to_kms
+      t.integer :up_to_kms
       t.decimal :adjust_amount
     end
   end

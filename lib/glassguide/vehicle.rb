@@ -1,5 +1,5 @@
 module Glassguide
-  class Vehicle < ActiveRecord::Base
+  class Vehicle < ::ActiveRecord::Base
     self.table_name = "glassguide_vehicles"
     self.primary_key = :code
 
@@ -7,7 +7,8 @@ module Glassguide
     has_one :standard_options, -> {where(rec_type: 'Standard:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
     has_one :optional_options, -> {where(rec_type: 'Optional:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
 
-
+    scope :motorcycles_only,-> {where(:motorcycle => true)}
+    scope :vehicles_only,-> {where(:motorcycle => false)} 
     
     scope :select_year ,->(year) {where((year.to_s == 'New') ? ['price_new IS NOT NULL'] : ['year = ? ', year.to_s])}
     scope :select_make ,->(make) {where(:make => make)}    
@@ -18,14 +19,12 @@ module Glassguide
     scope :select_series ,->(series) {where(:series => series)}    
     scope :select_engines ,->(engine) {where(:engine => engine)}  
 
-    scope :motorcycles_only,-> {where(:motorcycle => true)}
-    scope :vehicles_only,-> {where(:motorcycle => false)} 
 
 
     scope :list_year, -> {pluck(:year).uniq.sort}
     scope :list_make, -> {pluck(:make).uniq.sort}
     scope :list_families, -> {pluck(:family).uniq.sort}
-    scope :list_variants, -> {pluck(:variants).uniq.sort}
+    scope :list_variants, -> {pluck(:variant).uniq.sort}
     scope :list_styles, -> {pluck(:style).uniq.sort}
     scope :list_transmission, -> {pluck(:transmission).uniq.sort}
     scope :list_series, -> {pluck(:series).uniq.sort}
@@ -36,14 +35,15 @@ module Glassguide
     end
       
        
+    ##Not Testing due to time moving forward  
     def years_old
       ((Time.now - Date.parse("#{mth} #{year}").to_time).to_f / 1.year).round
     end
 
-
+    ##Not Testing due to directory not defined in  moving forward 
     def photo
       glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-    return "#{Rails.root}/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"    
+      return "#{Rails.root}/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"    
     end
 
     def average_kilometers()
@@ -64,24 +64,21 @@ module Glassguide
       km_diff = (km_diff.abs > max) ? max : km_diff.abs
 
 
-
       if average_kilometers < actual
         #we are looking for price adjustments where we have driven MORE than the indicated above average distance up to the next bracket
-        Glassguide::Kilometer.where("up_to_kms>=?", km_diff).where(:over_under == "O" && :km_category == km_category).sort.first.adjust_amount.to_i * -1
+        Glassguide::Kilometer.where("up_to_kms>=?", km_diff).where(:over_under => "O", :km_category => km_category).order("up_to_kms ASC").first.adjust_amount.to_i * -1
       elsif average_kilometers > actual
         #we are looking for price adjustments where we have driven LESS than the indicated above average distance up to the next bracket
-        Glassguide::Kilometer.where("up_to_kms>=?", km_diff).where(:over_under == "U" && :km_category == km_category).sort.first.adjust_amount.to_i
+        Glassguide::Kilometer.where("up_to_kms>=?", km_diff).where(:over_under => "U", :km_category => km_category).order("up_to_kms ASC").first.adjust_amount.to_i
       elsif average_kilometers == actual
         # no difference equals no adjustment
         0
       end
-
-    rescue => e
-      0
     end
 
     def kilometer_adjustment_dealer_retail(actual = average_kilometers, do_km_adjustment=true)
       do_km_adjustment ? kilometer_adjustment(actual) : 0
+      kilometer_adjustment(actual)
     end
 
     def kilometer_adjustment_private_sale(actual = average_kilometers, do_km_adjustment=true)
@@ -98,6 +95,7 @@ module Glassguide
 
     def price_adjusted_dealer_retail(actual = average_kilometers, options = [], do_km_adjustment=true)
       price_dealer_retail.to_i + kilometer_adjustment_dealer_retail(actual, do_km_adjustment) + value_of_options(options)
+
     end
 
     def price_adjusted_private_sale(actual = average_kilometers, options = [], do_km_adjustment=true)
@@ -154,32 +152,29 @@ module Glassguide
                               :adjusted_value => number_to_currency(self.price_new + self.value_of_options(option_codes), :precision => 0) }
       else
         depreciation_table = {
-          :price_dealer_retail => self.price_dealer_retail,
-          :price_private_sale => self.price_private_sale,
-          :price_trade_in => self.price_trade_in,
-          :price_trade_low => self.price_trade_low,
+          :price_dealer_retail => self.price_dealer_retail.to_f,
+          :price_private_sale => self.price_private_sale.to_f,
+          :price_trade_in => self.price_trade_in.to_f,
+          :price_trade_low => self.price_trade_low.to_f,
 
-          :adjust_dealer_retail_amount => self.kilometer_adjustment_dealer_retail(kilometers.to_f, do_km_adjustment),
-          :adjust_private_sale_amount => self.kilometer_adjustment_private_sale(kilometers.to_f, do_km_adjustment),
-          :adjust_trade_in_amount => self.kilometer_adjustment_trade_in(kilometers.to_f, do_km_adjustment),
-          :adjust_trade_low_amount => self.kilometer_adjustment_trade_low(kilometers.to_f, do_km_adjustment),
+          :adjust_dealer_retail_amount => self.kilometer_adjustment_dealer_retail(kilometers.to_f, do_km_adjustment).to_f,
+          :adjust_private_sale_amount => self.kilometer_adjustment_private_sale(kilometers.to_f, do_km_adjustment).to_f,
+          :adjust_trade_in_amount => self.kilometer_adjustment_trade_in(kilometers.to_f, do_km_adjustment).to_f,
+          :adjust_trade_low_amount => self.kilometer_adjustment_trade_low(kilometers.to_f, do_km_adjustment).to_f,
 
-          :options_dealer_retail_amount => (self.value_of_options(option_codes) rescue 0),
-          :options_private_sale_amount => (self.value_of_options(option_codes) rescue 0),
-          :options_trade_in_amount => (self.value_of_options(option_codes) * 0.5 rescue 0),
-          :options_trade_low_amount => (self.value_of_options(option_codes) * 0.3 rescue 0),
+          :options_dealer_retail_amount => (self.value_of_options(option_codes) rescue 0).to_f,
+          :options_private_sale_amount => (self.value_of_options(option_codes) rescue 0).to_f,
+          :options_trade_in_amount => (self.value_of_options(option_codes) * 0.5 rescue 0).to_f,
+          :options_trade_low_amount => (self.value_of_options(option_codes) * 0.3 rescue 0).to_f,
 
-          :adjusted_dealer_retail => self.price_adjusted_dealer_retail(kilometers.to_f, option_codes, do_km_adjustment),
-          :adjusted_private_sale => self.price_adjusted_private_sale(kilometers.to_f, option_codes, do_km_adjustment),
-          :adjusted_trade_in => self.price_adjusted_trade_in(kilometers.to_f, option_codes, do_km_adjustment),
-          :adjusted_trade_low => self.price_adjusted_trade_low(kilometers.to_f, option_codes, do_km_adjustment)
+          :adjusted_dealer_retail => self.price_adjusted_dealer_retail(kilometers.to_f, option_codes, do_km_adjustment).to_f,
+          :adjusted_private_sale => self.price_adjusted_private_sale(kilometers.to_f, option_codes, do_km_adjustment).to_f,
+          :adjusted_trade_in => self.price_adjusted_trade_in(kilometers.to_f, option_codes, do_km_adjustment).to_f,
+          :adjusted_trade_low => self.price_adjusted_trade_low(kilometers.to_f, option_codes, do_km_adjustment).to_f
         }
       end
 
-      # render :text => {:status => 'success', :result => depreciation_table}.to_json
       return depreciation_table
-    rescue ArgumentError => e
-      rescue_with_json(e)
     end
 
     def as_json(options = {})

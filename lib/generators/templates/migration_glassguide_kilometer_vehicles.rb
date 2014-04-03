@@ -5,7 +5,7 @@ class CreateGlassguideKilometerVehicles < ActiveRecord::Migration
       t.string :code, null: true
       t.string :nvic
       t.string :km_category
-      t.integer :average_kilometres_in_thousands
+      t.integer :average_kilometers_in_thousands
     end
   end
   

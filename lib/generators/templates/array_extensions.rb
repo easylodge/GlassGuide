@@ -1,3 +1,11 @@
+unless ENV['COVERAGE']
+  class Symbol
+    def to_proc
+      Proc.new { |item| item.send self }
+    end
+  end
+end
+
 class Array
   def to_proc
     Proc.new do |item|

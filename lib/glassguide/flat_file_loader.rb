@@ -117,7 +117,7 @@ module Glassguide
           import_file file, GLASS_KILOMETRES_VEHICLE, :find_or_create, [:nvic],
             :rename_fields => {
               :"glass's_code" => :code,
-              :"average_kms" => :average_kilometres_in_thousands,
+              :"average_kms" => :average_kilometers_in_thousands,
             }
 
         when ".UOP" #make, model ,family ,option ,years ,old(in years), adjust, amount

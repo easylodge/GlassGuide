@@ -43,7 +43,7 @@ module Glassguide
     ##Not Testing due to directory not defined in  moving forward 
     def photo
       glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-      return "#{Rails.root}/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"    
+      return "/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"    
     end
 
     def average_kilometers()

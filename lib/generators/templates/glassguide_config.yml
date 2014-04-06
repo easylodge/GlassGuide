@@ -1,4 +1,4 @@
-glassguide_URL:
+glassguide_url:
 image_directory:
 glassguide_login:
     - {username: '', password: '' } #first username is used for Photo's

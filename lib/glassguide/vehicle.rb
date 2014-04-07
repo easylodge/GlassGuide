@@ -182,7 +182,6 @@ module Glassguide
         :code => code,
         :nvic => nvic,
         :photo => photo,
-        :description => description,
         :years_old => years_old,
         :formatted_vehicle_name => formatted_vehicle_name,
         :year => year,

@@ -182,7 +182,6 @@ module Glassguide
         :code => code,
         :nvic => nvic,
         :photo => photo,
-        :years_old => years_old,
         :year => year,
         :make => make,
         :family => family,
@@ -190,20 +189,7 @@ module Glassguide
         :series => series,
         :style => style,
         :engine => engine,
-        :cc => cc,
-        :size => size,
-        :transmission => transmission,
-        :cyl => cyl,
-        :price_dealer_retail => price_dealer_retail,
-        :price_private_sale => price_private_sale,
-        :price_trade_in => price_trade_in,
-        :price_trade_low => price_trade_low,
-        :kilometers => average_kilometers,
-        :options => {
-          :standard => options_standard,
-          :optional => options_factory,
-          :selected_factory_options => selected_factory_options
-        }
+        :transmission => transmission
       }
     end
 

@@ -17,7 +17,8 @@ module Glassguide
     scope :select_styles ,->(style) {where(:style => style)}    
     scope :select_transmission ,->(transmission) {where(:transmission => transmission)}    
     scope :select_series ,->(series) {where(:series => series)}    
-    scope :select_engines ,->(engine) {where(:engine => engine)}  
+    scope :select_engines ,->(engine) {where(:engine => engine)}
+    scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)}   
 
 
 

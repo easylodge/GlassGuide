@@ -152,7 +152,7 @@ module Glassguide
         depreciation_table = {:new_vehicle    => true,
                               :price_new      => self.price_new,
                               :options_amount => (self.value_of_options(option_codes) rescue 0),
-                              :adjusted_value => (self.price_new + self.value_of_options(option_codes)
+                              :adjusted_value => (self.price_new + self.value_of_options(option_codes))
                             }
       else
         depreciation_table = {

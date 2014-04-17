@@ -75,6 +75,8 @@ module Glassguide
         # no difference equals no adjustment
         0
       end
+    rescue
+        return 0
     end
 
     def kilometer_adjustment_dealer_retail(actual = average_kilometers, do_km_adjustment=true)

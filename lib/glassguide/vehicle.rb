@@ -145,10 +145,10 @@ module Glassguide
       Glassguide::OptionValue.for_codes(option_codes, self.years_old).sum(:adjust_amount)
     end
 
-    def deprication_table(kilometers = average_kilometers, do_km_adjustment = true, option_codes = {})
+    def deprication_table(kilometers = average_kilometers, do_km_adjustment = true, option_codes = {}, year_new = false)
     option_codes # needs to be send through as ["NVIC", "TR5", "GARBLE"]
 
-      if (!self.price_new.nil? || self.price_new.to_i > 0) && self.year == "New"
+      if (!self.price_new.nil? || self.price_new.to_i > 0) && year_new == true
         depreciation_table = {:new_vehicle    => true,
                               :price_new      => self.price_new,
                               :options_amount => (self.value_of_options(option_codes) rescue 0),

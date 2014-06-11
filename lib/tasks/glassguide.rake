@@ -21,9 +21,10 @@ namespace :glassguide do
   desc 'Downloads the most recent photo zip file, unzip and store on image save location'
   task :get_import_images => :environment do
     glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-    
+
 
     ftp = Net::FTP.new(glassguide_details["glassguide_url"])
+    ftp.passive=true
     glassguide_login = glassguide_details["glassguide_login"].first
     if ftp.login(glassguide_login["username"],glassguide_login["password"])
       p "Logged in to #{glassguide_details['glassguide_url']}"
@@ -136,9 +137,9 @@ namespace :glassguide do
     %x{rm -rf "#{first_folder_name}"}
 
     ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
-    
 
-    
+
+
     gp = Object.new.send :extend, Glassguide::Package
 
     puts 'Extracting zip'

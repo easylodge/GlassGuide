@@ -71,6 +71,7 @@ namespace :glassguide do
     # downloading required files
     glassguide_details["glassguide_login"].each do |glassguide_login|
       ftp = Net::FTP.new(glassguide_details["glassguide_url"])
+      ftp.passive=true
       if ftp.login(glassguide_login["username"],glassguide_login["password"])
         p "Logged in to ftp.glassguide.com.au (#{glassguide_login['username']})"
         filename = Date.today.strftime("%b%y") + "eis.zip"

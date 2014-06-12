@@ -3,7 +3,6 @@ require 'fileutils'
 require 'net/ftp'
 
 namespace :glassguide do
-
   # task :import_all => :environment do #this needs to run with cron job once a month maby?
   #   Rake::Task['easylodge:glass:get_import_images'].invoke
   #   Rake::Task['easylodge:glass:get_data'].invoke
@@ -16,13 +15,9 @@ namespace :glassguide do
     Rake::Task['glassguide:get_import_data'].invoke
   end
 
-
-
   desc 'Downloads the most recent photo zip file, unzip and store on image save location'
   task :get_import_images => :environment do
     glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-
-
     ftp = Net::FTP.new(glassguide_details["glassguide_url"])
     ftp.passive=true
     glassguide_login = glassguide_details["glassguide_login"].first
@@ -37,21 +32,18 @@ namespace :glassguide do
         file_path = Pathname.new("#{Rails.root}/#{filename}")
         if file_path.exist?
           p "Download Succesful!"
-
           p "Unzipping #{filename}"
-
           %x{mkdir -p "#{Rails.root}/public/#{glassguide_details['image_directory']}"}
           %x{unzip "#{file_path}" -d "#{Rails.root}/public/#{glassguide_details['image_directory']}"}
           unzipped_folder = Pathname.new("#{Rails.root}/public/#{glassguide_details['image_directory']}")
           if unzipped_folder.exist?
             p "Unzip OK!"
             p "Save Succesful!"
-
             p "Removing downloaded zip file"
             %x{rm "#{file_path}"}
             p "All Done!"
           else
-            p "Unzip Fail"
+            p "Unzip Failed!"
           end
         else
           p "Download Failed!"
@@ -60,8 +52,10 @@ namespace :glassguide do
         p "#{filename} not found on ftp server"
       end
     else
-      p "Ftp login has failed"
+      p "FTP login has failed!"
     end
+    ftp.close
+    p "Closing FTP connection"
   end
 
   desc 'Downloads the most recent data zip files, unzip and merge'
@@ -104,9 +98,8 @@ namespace :glassguide do
       else
         p "Ftp login has failed"
       end
-
       ftp.close
-      p "Closing connection ftp.glassguide.com.au (#{glassguide_login['username']})"
+      p "Closing FTP connection"
     end
 
     # merging downloaded files
@@ -138,9 +131,6 @@ namespace :glassguide do
     %x{rm -rf "#{first_folder_name}"}
 
     ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
-
-
-
     gp = Object.new.send :extend, Glassguide::Package
 
     puts 'Extracting zip'

@@ -205,10 +205,15 @@ module Glassguide
               row[:price_new] = nil if row.has_key?(:price_new)
               row[:motorcycle] = motorcycle if klass == GLASS_VEHICLE
               row[:price_private_sale] = ((row[:price_dealer_retail].to_i - row[:price_trade_in].to_i) / 2) + row[:price_trade_in].to_i if row.has_key?(:price_dealer_retail)
-              klass.send :"find_or_create_by_#{keys.join '_and_'}", row
+
+              #filter by keys
+              tmp_row = row.select{|k,v| keys.include? k}
+              klass.find_or_create_by tmp_row
             when :update
               # updates only on new vehicles
-              record = klass.send :"find_by_#{keys.join '_and_'}!", *row.values_at(*keys)
+              #filter by keys
+              tmp_row = row.select{|k,v| keys.include? k}
+              record = klass.find_by tmp_row
               record.update_attributes! row
             else
               raise "Invalid action: #{action}"

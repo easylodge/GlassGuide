@@ -196,7 +196,12 @@ module Glassguide
     def import_file(file, klass, action, keys, options = {})
       motorcycle = file.split('/').last[/^MCG/].present?
 
-      parse_file(file, options).each_slice 200 do |rows|
+      progress = 0
+      total_lines = `wc -l < #{Shellwords.escape file}`.strip.to_i
+
+      parse_file(file, options).each_slice 1000 do |rows|
+        progress += 1000
+        p "#{progress} / #{total_lines}"
         klass.transaction do
           rows.each do |row|
             case action
@@ -205,10 +210,7 @@ module Glassguide
               row[:price_new] = nil if row.has_key?(:price_new)
               row[:motorcycle] = motorcycle if klass == GLASS_VEHICLE
               row[:price_private_sale] = ((row[:price_dealer_retail].to_i - row[:price_trade_in].to_i) / 2) + row[:price_trade_in].to_i if row.has_key?(:price_dealer_retail)
-
-              #filter by keys
-              tmp_row = row.select{|k,v| keys.include? k}
-              klass.find_or_create_by tmp_row
+              klass.find_or_create_by row
             when :update
               # updates only on new vehicles
               #filter by keys
@@ -225,7 +227,7 @@ module Glassguide
 
     def parse_file(file, options = {}, &block)
       unless block_given?
-        return Enumerator.new(self, :parse_file, file, options)
+        return self.enum_for(:parse_file, file, options)
       end
 
       @filename = File.basename(file)
@@ -234,10 +236,6 @@ module Glassguide
         :lines => 0,
         :after => {}
       }.update(options)
-
-      total_lines = `wc -l < #{Shellwords.escape file}`.strip.to_i
-      # progress_bar = ProgressBar.new @filename, total_lines if @verbose
-      puts "Importing #{@filename}" unless @verbose
 
       fields = []
       field_pattern = ""

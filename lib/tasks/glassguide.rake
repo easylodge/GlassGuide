@@ -38,7 +38,7 @@ namespace :glassguide do
           p "Download Succesful!"
           p "Unzipping #{filename}"
           %x{mkdir -p "#{Rails.root}/public/#{@login['image_directory']}"}
-          %x{unzip "#{file_path}" -d "#{Rails.root}/public/#{@login['image_directory']}"}
+          %x{unzip -o "#{file_path}" -d "#{Rails.root}/public/#{@login['image_directory']}"}
           unzipped_folder = Pathname.new("#{Rails.root}/public/#{@login['image_directory']}")
           if unzipped_folder.exist?
             p "Unzip OK!"

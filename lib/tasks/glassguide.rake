@@ -21,13 +21,10 @@ namespace :glassguide do
 
   desc 'Downloads the most recent photo zip file, unzip and store on image save location'
   task :get_import_images => :environment do
-    # login = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
     
-    # ftp_request(login["glassguide_url"], login["glassguide_photo_login"]["username"], login["glassguide_photo_login"]["password"])
-
     ftp = Net::FTP.new(@login["glassguide_url"])
     ftp.passive=true
-    # login = glassguide_details["glassguide_login"].first
+    
     if ftp.login(@login["glassguide_photo_login"]["username"],@login["glassguide_photo_login"]["password"])
       p "Logged in to #{@login['glassguide_url']}"
       filename = "Photo_" + Date.today.strftime("%b%y") + ".zip"
@@ -67,41 +64,17 @@ namespace :glassguide do
 
   desc 'Downloads the most recent data zip files, unzip and merge'
   task :get_import_data => :environment do
-    # login = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-
+    
     # downloading required files
     ftp_request(@login["glassguide_url"], @login["glassguide_photo_login"]["username"], @login["glassguide_photo_login"]["password"])
     ftp_request(@login["glassguide_url"], @login["glassguide_extra_login"]["username"], @login["glassguide_extra_login"]["password"])
-    # glassguide_details["glassguide_login"].each do |glassguide_login|
-    # end
-
-    
 
     # merging downloaded files
     first_folder_name = Date.today.strftime('%b%y') + "eis_#{@login['glassguide_photo_login']['username']}"
     first_folder_path = Pathname.new("#{Rails.root}/#{first_folder_name}")
 
     p "Combining files"
-    combine_files(first_folder_name, first_folder_path)
-
-    # glassguide_details["glassguide_login"].each_with_index do |glassguide_login,index|
-      # unless index == 0 # copy all files to folder #1
-      #   current_folder = Date.today.strftime("%b%y") + "eis_#{glassguide_login['username']}"
-      #   current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
-
-      #   if current_folder_path.exist? && first_folder_path
-      #     p "copying #{current_folder_path} to #{first_folder_path}"
-      #     %x{cp -a "#{current_folder_path}"/* "#{first_folder_path}"}
-
-      #     p "Removing old folder #{current_folder}"
-      #     %x{rm -rf "#{current_folder}"}
-      #   else
-      #     p "Could not find requested folder #{current_folder_path} or #{first_folder_path}"
-      #   end
-      # end
-    # end
-
-    
+    combine_files(first_folder_name, first_folder_path)    
 
     p "Zipping combined folder #{first_folder_name}"
     %x{cd "#{first_folder_path}" && zip -r "#{Rails.root}/#{Date.today.strftime('%b%y')}"eis.zip .} #zipping the folder aswell as the files, only want to zip the folder content
@@ -160,20 +133,18 @@ namespace :glassguide do
     end
 
     def combine_files(first_folder_name, first_folder_path)
-      # unless index == 0 # copy all files to folder #1
-        current_folder = Date.today.strftime("%b%y") + "eis_#{@login["glassguide_extra_login"]['username']}"
-        current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
+      current_folder = Date.today.strftime("%b%y") + "eis_#{@login["glassguide_extra_login"]['username']}"
+      current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
 
-        if current_folder_path.exist? && first_folder_path
-          p "copying #{current_folder_path} to #{first_folder_path}"
-          %x{cp -a "#{current_folder_path}"/* "#{first_folder_path}"}
+      if current_folder_path.exist? && first_folder_path
+        p "copying #{current_folder_path} to #{first_folder_path}"
+        %x{cp -a "#{current_folder_path}"/* "#{first_folder_path}"}
 
-          p "Removing old folder #{current_folder}"
-          %x{rm -rf "#{current_folder}"}
-        else
-          p "Could not find requested folder #{current_folder_path} or #{first_folder_path}"
-        end
-      # end
-
+        p "Removing old folder #{current_folder}"
+        %x{rm -rf "#{current_folder}"}
+      else
+        p "Could not find requested folder #{current_folder_path} or #{first_folder_path}"
+      end
+    
     end
 end

@@ -197,6 +197,11 @@ module Glassguide
       }
     end
 
+    def self.find_by_nvic(nvic)
+      nvic = nvic.upcase
+      self.where(nvic: nvic).first
+    end
+
   end
 end
 

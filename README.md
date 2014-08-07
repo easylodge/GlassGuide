@@ -12,13 +12,65 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
+Then run install generator:
 
-    $ gem install glassguide
+    rails g glassguide:install
+
+You can also copy the gem rspec tests to your local app with:
+
+    rails g glassguide:rspec
+
+Then run migrations:
+
+    rake db:migrate
+
+Fill in Glass Guide details in config/glassguide_config.yml
+
+Then run rake tasks to import db records and photos
+
+    rake glassguide:get_import_data (downloads all the glassguide records and overwrite existing records)
+    rake glassguide:get_import_images (downloads newest images - will overwrite existing)
+
+  or both:
+
+    rake glassguide:import_all (do both)
 
 ## Usage
 
-TODO: Write usage instructions here
+  After the import you have the glass guide records.
+
+### Glassguide::Vehicle
+
+####Available scopes:
+
+    .motorcycles_only
+    .vehicles_only
+    .select_year(year)
+    .select_make(make)
+    .select_families(family)
+    .select_variants(variant)
+    .select_styles(style)
+    .select_transmission(transmission)
+    .select_series(series)
+    .select_engines(engine)
+    .select_vehicle_type(choice)
+
+####Scopes that return array of available values:
+
+    .list_year
+    .list_make
+    .list_families
+    .list_variants
+    .list_styles
+    .list_transmission
+    .list_series
+    .list_engines
+
+####Instance Variables:
+
+    .photo
+    .years_old
+    .retail_price
 
 ## Contributing
 
@@ -27,6 +79,3 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-=======
-GlassGuide
-==========

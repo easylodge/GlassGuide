@@ -9,6 +9,10 @@ namespace :glassguide do
   #   Rake::Task['easylodge:glass:import_data'].invoke
   # end
 
+  @login = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
+
+
+
   desc 'Runs both the glasses guide tasks(glassguide:get_import_images, glassguide:get_import_data) to update images and data'
   task :import_all => :environment do #this needs to run with cron job once a month maby?
     Rake::Task['glassguide:get_import_images'].invoke
@@ -17,12 +21,12 @@ namespace :glassguide do
 
   desc 'Downloads the most recent photo zip file, unzip and store on image save location'
   task :get_import_images => :environment do
-    glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-    ftp = Net::FTP.new(glassguide_details["glassguide_url"])
+    
+    ftp = Net::FTP.new(@login["glassguide_url"])
     ftp.passive=true
-    glassguide_login = glassguide_details["glassguide_login"].first
-    if ftp.login(glassguide_login["username"],glassguide_login["password"])
-      p "Logged in to #{glassguide_details['glassguide_url']}"
+    
+    if ftp.login(@login["glassguide_photo_login"]["username"],@login["glassguide_photo_login"]["password"])
+      p "Logged in to #{@login['glassguide_url']}"
       filename = "Photo_" + Date.today.strftime("%b%y") + ".zip"
       remote_file = ftp.nlst.reject{|r| r != filename}.first
       if remote_file
@@ -33,9 +37,9 @@ namespace :glassguide do
         if file_path.exist?
           p "Download Succesful!"
           p "Unzipping #{filename}"
-          %x{mkdir -p "#{Rails.root}/public/#{glassguide_details['image_directory']}"}
-          %x{unzip "#{file_path}" -d "#{Rails.root}/public/#{glassguide_details['image_directory']}"}
-          unzipped_folder = Pathname.new("#{Rails.root}/public/#{glassguide_details['image_directory']}")
+          %x{mkdir -p "#{Rails.root}/public/#{@login['image_directory']}"}
+          %x{unzip "#{file_path}" -d "#{Rails.root}/public/#{@login['image_directory']}"}
+          unzipped_folder = Pathname.new("#{Rails.root}/public/#{@login['image_directory']}")
           if unzipped_folder.exist?
             p "Unzip OK!"
             p "Save Succesful!"
@@ -60,14 +64,40 @@ namespace :glassguide do
 
   desc 'Downloads the most recent data zip files, unzip and merge'
   task :get_import_data => :environment do
-    glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-
+    
     # downloading required files
-    glassguide_details["glassguide_login"].each do |glassguide_login|
-      ftp = Net::FTP.new(glassguide_details["glassguide_url"])
+    ftp_request(@login["glassguide_url"], @login["glassguide_photo_login"]["username"], @login["glassguide_photo_login"]["password"])
+    ftp_request(@login["glassguide_url"], @login["glassguide_extra_login"]["username"], @login["glassguide_extra_login"]["password"])
+
+    # merging downloaded files
+    first_folder_name = Date.today.strftime('%b%y') + "eis_#{@login['glassguide_photo_login']['username']}"
+    first_folder_path = Pathname.new("#{Rails.root}/#{first_folder_name}")
+
+    p "Combining files"
+    combine_files(first_folder_name, first_folder_path)    
+
+    p "Zipping combined folder #{first_folder_name}"
+    %x{cd "#{first_folder_path}" && zip -r "#{Rails.root}/#{Date.today.strftime('%b%y')}"eis.zip .} #zipping the folder aswell as the files, only want to zip the folder content
+
+    p "Removing combined folder #{first_folder_name}"
+    %x{rm -rf "#{first_folder_name}"}
+
+    ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
+    gp = Object.new.send :extend, Glassguide::Package
+
+    puts 'Extracting zip'
+    extracted_zip = gp.extract_zip_to_tempdir ENV['FILENAME']
+    Glassguide::Loader.new extracted_zip, true
+
+    %x{rm "#{ENV['FILENAME']}"}
+    puts 'Done!'
+  end
+
+  def ftp_request(url, username, password)
+      ftp = Net::FTP.new(url)
       ftp.passive=true
-      if ftp.login(glassguide_login["username"],glassguide_login["password"])
-        p "Logged in to ftp.glassguide.com.au (#{glassguide_login['username']})"
+      if ftp.login(username, password)
+        p "Logged in to ftp.glassguide.com.au (#{username})"
         filename = Date.today.strftime("%b%y") + "eis.zip"
         remote_file = ftp.nlst.reject{|r| r != filename}.first
         if remote_file
@@ -78,9 +108,9 @@ namespace :glassguide do
           if zip_file_path.exist?
             p "Download OK!"
 
-            p "Unzipping #{filename} to #{filename.split('.').first}_#{glassguide_login['username']}"
-            %x{unzip "#{zip_file_path}" -d "#{filename.split('.').first}_#{glassguide_login['username']}"}
-            unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{glassguide_login['username']}/")
+            p "Unzipping #{filename} to #{filename.split('.').first}_#{username}"
+            %x{unzip "#{zip_file_path}" -d "#{filename.split('.').first}_#{username}"}
+            unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{username}/")
 
             if unzipped_folder.exist?
               p "Unzip OK!"
@@ -102,42 +132,19 @@ namespace :glassguide do
       p "Closing FTP connection"
     end
 
-    # merging downloaded files
-    first_folder_name = Date.today.strftime('%b%y') + "eis_#{glassguide_details['glassguide_login'].first['username']}"
-    first_folder_path = Pathname.new("#{Rails.root}/#{first_folder_name}")
+    def combine_files(first_folder_name, first_folder_path)
+      current_folder = Date.today.strftime("%b%y") + "eis_#{@login["glassguide_extra_login"]['username']}"
+      current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
 
-    p "Combining files"
-    glassguide_details["glassguide_login"].each_with_index do |glassguide_login,index|
-      unless index == 0 # copy all files to folder #1
-        current_folder = Date.today.strftime("%b%y") + "eis_#{glassguide_login['username']}"
-        current_folder_path = Pathname.new("#{Rails.root}/#{current_folder}")
+      if current_folder_path.exist? && first_folder_path
+        p "copying #{current_folder_path} to #{first_folder_path}"
+        %x{cp -a "#{current_folder_path}"/* "#{first_folder_path}"}
 
-        if current_folder_path.exist? && first_folder_path
-          p "copying #{current_folder_path} to #{first_folder_path}"
-          %x{cp -a "#{current_folder_path}"/* "#{first_folder_path}"}
-
-          p "Removing old folder #{current_folder}"
-          %x{rm -rf "#{current_folder}"}
-        else
-          p "Could not find requested folder #{current_folder_path} or #{first_folder_path}"
-        end
+        p "Removing old folder #{current_folder}"
+        %x{rm -rf "#{current_folder}"}
+      else
+        p "Could not find requested folder #{current_folder_path} or #{first_folder_path}"
       end
+    
     end
-
-    p "Zipping combined folder #{first_folder_name}"
-    %x{cd "#{first_folder_path}" && zip -r "#{Rails.root}/#{Date.today.strftime('%b%y')}"eis.zip .} #zipping the folder aswell as the files, only want to zip the folder content
-
-    p "Removing combined folder #{first_folder_name}"
-    %x{rm -rf "#{first_folder_name}"}
-
-    ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
-    gp = Object.new.send :extend, Glassguide::Package
-
-    puts 'Extracting zip'
-    extracted_zip = gp.extract_zip_to_tempdir ENV['FILENAME']
-    Glassguide::Loader.new extracted_zip, true
-
-    %x{rm "#{ENV['FILENAME']}"}
-    puts 'Done!'
-  end
 end

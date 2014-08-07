@@ -39,9 +39,9 @@ Then run rake tasks to import db records and photos
 
   After the import you have the glass guide records.
 
-  ### Glassguide::Vehicle
+### Glassguide::Vehicle
 
-  Available scopes:
+####Available scopes:
 
     .motorcycles_only
     .vehicles_only
@@ -55,7 +55,7 @@ Then run rake tasks to import db records and photos
     .select_engines(engine)
     .select_vehicle_type(choice)
 
-  Scopes that return array of available values:
+####Scopes that return array of available values:
 
     .list_year
     .list_make
@@ -66,7 +66,7 @@ Then run rake tasks to import db records and photos
     .list_series
     .list_engines
 
-  Instance Variables:
+####Instance Variables:
 
     .photo
     .years_old

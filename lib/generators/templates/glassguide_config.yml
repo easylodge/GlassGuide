@@ -1,5 +1,8 @@
-glassguide_url:
-image_directory:
-glassguide_login:
-    - {username: '', password: '' } #first username is used for Photo's
-    - {username: '', password: '' } # second username is for extra section like motorcycles.
+glassguide_url: 
+image_directory: 
+glassguide_photo_login: #Used for Photo's
+    username: ''
+    password: '' 
+glassguide_extra_login: # second username is for extra section like motorcycles.
+    username: ''
+    password: ''

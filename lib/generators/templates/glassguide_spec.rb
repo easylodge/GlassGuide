@@ -1,4 +1,4 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe Glassguide::Vehicle do
   # it{expect(subject).to respond_to(:id)}
@@ -48,17 +48,6 @@ describe Glassguide::Vehicle do
     it { expect(subject).to respond_to :country }
     it { expect(subject).to respond_to :released_date }
     it { expect(subject).to respond_to :discont_date }
-  end
-
-  context "find_by_nvic" do
-    Glassguide::Vehicle.create(:nvic => "Q3N14A")
-    it "can find record with uppercase nvic" do
-      expect(Glassguide::Vehicle.find_by_nvic("Q3N14A")).to_not eq(nil)
-    end
-
-    it "can find record with lowercase nvic" do
-      expect(Glassguide::Vehicle.find_by_nvic("q3n14a")).to_not eq(nil)
-    end
   end
 
 

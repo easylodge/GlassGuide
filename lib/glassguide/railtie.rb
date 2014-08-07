@@ -1,7 +1,7 @@
 require 'glassguide'
 require 'rails'
 
-module RakeTasks
+module Glassguide  
   class Railtie < Rails::Railtie
     railtie_name :glassguide
 

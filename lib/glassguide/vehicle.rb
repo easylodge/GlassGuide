@@ -20,16 +20,14 @@ module Glassguide
     scope :select_engines ,->(engine) {where(:engine => engine)}
     scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)}   
 
-
-
-    scope :list_year, -> {pluck(:year).uniq.sort}
-    scope :list_make, -> {pluck(:make).uniq.sort}
-    scope :list_families, -> {pluck(:family).uniq.sort}
-    scope :list_variants, -> {pluck(:variant).uniq.sort}
-    scope :list_styles, -> {pluck(:style).uniq.sort}
-    scope :list_transmission, -> {pluck(:transmission).uniq.sort}
-    scope :list_series, -> {pluck(:series).uniq.sort}
-    scope :list_engines, -> {pluck(:engine).uniq.sort}
+    scope :list_year, -> {where("year!=?", "").pluck(:year).uniq.sort}
+    scope :list_make, -> {where("make!=?", "").pluck(:make).uniq.sort}
+    scope :list_families, -> {where("family!=?", "").pluck(:family).uniq.sort}
+    scope :list_variants, -> {where("variant!=?", "").pluck(:variant).uniq.sort}
+    scope :list_styles, -> {where("style!=?", "").pluck(:style).uniq.sort}
+    scope :list_transmission, -> {where("transmission!=?", "").pluck(:transmission).uniq.sort}
+    scope :list_series, -> {where("series!=?", "").pluck(:series).uniq.sort}
+    scope :list_engines, -> {where("engine!=?", "").pluck(:engine).uniq.sort}
 
     def custom_primary_key=(val)
       self[:code] = val

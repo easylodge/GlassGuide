@@ -152,6 +152,10 @@ module Glassguide
               :trade_low => :price_trade_low,
               :trade => :price_trade_in,
               :retail => :price_dealer_retail,
+
+              # imported database
+              :model => :family,
+              :engine_type => :engine,
             }
         end
       end
@@ -206,6 +210,9 @@ module Glassguide
           rows.each do |row|
             case action
             when :find_or_create
+              # set year to current year if nil
+              row[:year] = DateTime.now.year.to_s if (!row.has_key?(:year) && (klass == GLASS_VEHICLE))
+              row[:mth] =  DateTime.now.strftime("%b") if (!row.has_key?(:mth) && (klass == GLASS_VEHICLE))
               # these are all used vehicles, set price_new to nil
               row[:price_new] = nil if row.has_key?(:price_new)
               row[:motorcycle] = motorcycle if klass == GLASS_VEHICLE

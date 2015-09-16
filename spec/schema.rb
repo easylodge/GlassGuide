@@ -87,6 +87,8 @@ ActiveRecord::Schema.define do
       t.string  :country
       t.string  :released_date
       t.string  :discont_date
+      t.string  :model
+      t.string  :engine_type
       t.timestamps
     end
 end

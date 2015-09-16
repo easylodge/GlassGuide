@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Glassguide::Vehicle do
-  # it{expect(subject).to respond_to(:id)}
 
   context "attrs" do
     it { expect(subject).to respond_to :id } 
@@ -144,44 +143,37 @@ describe Glassguide::Vehicle do
     end
 
     it "for building a list of years" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("year!=?", "").list_year).to eq(["1990", "1992"])
+      expect(Glassguide::Vehicle.list_year).to eq(["1990", "1992"])
     end
 
-    it "for building a list of years" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("make!=?", "").list_make).to eq(["XXY", "YXX"])
+    it "for building a list of makes" do
+      expect(Glassguide::Vehicle.list_make).to eq(["XXY", "YXX"])
     end
 
     it "for building a list of families" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("family!=?", "").list_families).to eq(["QAZ", "ZAQ"])
+      expect(Glassguide::Vehicle.list_families).to eq(["QAZ", "ZAQ"])
     end
 
     it "for building a list of variants" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("variant!=?", "").list_variants).to eq(["WSX", "XSW"])
+      expect(Glassguide::Vehicle.list_variants).to eq(["WSX", "XSW"])
     end
 
     it "for building a list of styles" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("style!=?", "").list_styles).to eq(["CDE", "EDC"])
+      expect(Glassguide::Vehicle.list_styles).to eq(["CDE", "EDC"])
     end
 
     it "for building a list of transmissions" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("transmission!=?", "").list_transmission).to eq(["RFV", "VFR"])
+      expect(Glassguide::Vehicle.list_transmission).to eq(["RFV", "VFR"])
     end
 
     it "for building a list of series" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("series!=?", "").list_series).to eq(["BGT", "TGB"])
+      expect(Glassguide::Vehicle.list_series).to eq(["BGT", "TGB"])
     end
 
     it "for building a list of engines" do
-      # there was 10 1990, but it only retrieved the one value
-      expect(Glassguide::Vehicle.where("engine!=?", "").list_engines).to eq(["NHY", "YHN"])
+      expect(Glassguide::Vehicle.list_engines).to eq(["NHY", "YHN"])
     end
+
   end
 
   context "Functions" do
@@ -195,7 +187,7 @@ describe Glassguide::Vehicle do
     it "Test Retrieval Average Kilometers" do
       #this function is only used for uploading
       x = Glassguide::Vehicle.create(:code => "ABCDF")
-      y = Glassguide::KilometerVehicle.create(:code => "ABCDF",:average_kilometers_in_thousands => 10)
+      Glassguide::KilometerVehicle.create(:code => "ABCDF",:average_kilometers_in_thousands => 10)
       #This should return the value * 1000 because the column is /1000 of the actual value
       expect(x.average_kilometers).to eq(10000)
     end

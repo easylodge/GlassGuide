@@ -18,6 +18,8 @@ module Glassguide
     scope :select_transmission ,->(transmission) {where(:transmission => transmission)}    
     scope :select_series ,->(series) {where(:series => series)}    
     scope :select_engines ,->(engine) {where(:engine => engine)}
+    scope :select_cylinder ,->(cyl) {where(:cyl => cyl)}
+    scope :select_size ,->(size) {where(:size => size)}
     scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)}   
 
     scope :list_year, -> {where("year!=?", "").pluck(:year).uniq.sort}
@@ -27,7 +29,7 @@ module Glassguide
     scope :list_styles, -> {where("style!=?", "").pluck(:style).uniq.sort}
     scope :list_transmission, -> {where("transmission!=?", "").pluck(:transmission).uniq.sort}
     scope :list_series, -> {where("series!=?", "").pluck(:series).uniq.sort}
-    scope :list_engines, -> {where("engine!=?", "").pluck(:engine).uniq.sort}
+    scope :list_engines, -> {where("engine!=?", "").pluck(:engine, :size, :cyl).collect{|x| x.flatten.join(", ")}.uniq.sort}
 
     def custom_primary_key=(val)
       self[:code] = val

@@ -142,22 +142,6 @@ describe Glassguide::Vehicle do
       expect(Glassguide::Vehicle.select_engines("YHN").count).to eq(10)
     end
 
-    it "for narrowing down by models" do
-      10.times do
-        Glassguide::Vehicle.create(:model => "YHN")
-        Glassguide::Vehicle.create(:model => "NHY")
-      end
-      expect(Glassguide::Vehicle.select_models("YHN").count).to eq(10)
-    end
-
-    it "for narrowing down by engine types" do
-      10.times do
-        Glassguide::Vehicle.create(:engine_type => "YHN")
-        Glassguide::Vehicle.create(:engine_type => "NHY")
-      end
-      expect(Glassguide::Vehicle.select_engine_types("YHN").count).to eq(10)
-    end
-
     it "for building a list of years" do
       expect(Glassguide::Vehicle.list_year).to eq(["1990", "1992"])
     end
@@ -190,13 +174,6 @@ describe Glassguide::Vehicle do
       expect(Glassguide::Vehicle.list_engines).to eq(["NHY", "YHN"])
     end
 
-    it "for building a list of models" do
-      expect(Glassguide::Vehicle.list_models).to eq(["NHY", "YHN"])
-    end
-
-    it "for building a list of engine_types" do
-      expect(Glassguide::Vehicle.list_engine_types).to eq(["NHY", "YHN"])
-    end
   end
 
   context "Functions" do

@@ -109,7 +109,7 @@ namespace :glassguide do
             p "Download OK!"
 
             p "Unzipping #{filename} to #{filename.split('.').first}_#{username}"
-            %x{unzip "#{zip_file_path}" -d "#{filename.split('.').first}_#{username}"}
+            %x{unzip -o "#{zip_file_path}" -d "#{filename.split('.').first}_#{username}"}
             unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{username}/")
 
             if unzipped_folder.exist?

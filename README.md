@@ -54,8 +54,6 @@ Then run rake tasks to import db records and photos
     .select_series(series)
     .select_engines(engine)
     .select_vehicle_type(choice)
-    .select_models(model)
-    .select_engine_types(engine_type)
 
 ####Scopes that return array of available values:
 
@@ -67,8 +65,6 @@ Then run rake tasks to import db records and photos
     .list_transmission
     .list_series
     .list_engines
-    .list_models
-    .list_engine_types
 
 ####Instance Variables:
 

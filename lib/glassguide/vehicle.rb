@@ -19,7 +19,6 @@ module Glassguide
     scope :select_series ,->(series) {where(:series => series)}    
     scope :select_engines ,->(engine) {where(:engine => engine)}
     scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)}   
-    scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)} 
     scope :select_models ,->(model) {where(:model => model)}
     scope :select_engine_types ,->(engine_type) {where(:engine_type => engine_type)}
 

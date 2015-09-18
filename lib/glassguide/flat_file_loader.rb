@@ -199,6 +199,7 @@ module Glassguide
 
     def import_file(file, klass, action, keys, options = {})
       motorcycle = file.split('/').last[/^MCG/].present?
+      imported = file.split('/').last[/^IMPOR/].present?
 
       progress = 0
       total_lines = `wc -l < #{Shellwords.escape file}`.strip.to_i
@@ -213,9 +214,10 @@ module Glassguide
               # set year to current year if nil
               row[:year] = DateTime.now.year.to_s if (!row.has_key?(:year) && (klass == GLASS_VEHICLE))
               row[:mth] =  DateTime.now.strftime("%b") if (!row.has_key?(:mth) && (klass == GLASS_VEHICLE))
+              row[:imported] =  imported if (klass == GLASS_VEHICLE)
               # these are all used vehicles, set price_new to nil
               row[:price_new] = nil if row.has_key?(:price_new)
-              row[:motorcycle] = motorcycle if klass == GLASS_VEHICLE
+              row[:motorcycle] = motorcycle if (klass == GLASS_VEHICLE)
               row[:price_private_sale] = ((row[:price_dealer_retail].to_i - row[:price_trade_in].to_i) / 2) + row[:price_trade_in].to_i if row.has_key?(:price_dealer_retail)
               klass.find_or_create_by row
             when :update

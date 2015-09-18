@@ -47,6 +47,7 @@ describe Glassguide::Vehicle do
     it { expect(subject).to respond_to :country }
     it { expect(subject).to respond_to :released_date }
     it { expect(subject).to respond_to :discont_date }
+    it { expect(subject).to respond_to :imported }
   end
 
   context "find_by_nvic" do
@@ -66,6 +67,7 @@ describe Glassguide::Vehicle do
     10.times do
       Glassguide::Vehicle.create(:motorcycle => false)
       Glassguide::Vehicle.create(:motorcycle => true)
+      Glassguide::Vehicle.create(:imported => true)
     end
 
     it "for narrowing down to vehicles only" do
@@ -74,6 +76,10 @@ describe Glassguide::Vehicle do
 
     it "for narrowing down to motorcycles only" do
       expect(Glassguide::Vehicle.motorcycles_only.count).to eq(10)
+    end
+
+    it "for narrowing down to imported only" do
+      expect(Glassguide::Vehicle.imported_only.count).to eq(10)
     end
 
     ## motorcycle and vehicles use checks the same field
@@ -136,8 +142,8 @@ describe Glassguide::Vehicle do
 
     it "for narrowing down by engines" do
       10.times do
-        Glassguide::Vehicle.create(:engine => "YHN")
-        Glassguide::Vehicle.create(:engine => "NHY")
+        Glassguide::Vehicle.create(:engine => "YHN", :size => "2L", :cyl => "4")
+        Glassguide::Vehicle.create(:engine => "NHY", :size => "3L", :cyl => "6")
       end
       expect(Glassguide::Vehicle.select_engines("YHN").count).to eq(10)
     end
@@ -171,7 +177,7 @@ describe Glassguide::Vehicle do
     end
 
     it "for building a list of engines" do
-      expect(Glassguide::Vehicle.list_engines).to eq(["NHY", "YHN"])
+      expect(Glassguide::Vehicle.list_engines).to eq(["NHY, 3L, 6", "YHN, 2L, 4"])
     end
 
   end

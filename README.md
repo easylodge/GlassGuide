@@ -45,6 +45,7 @@ Then run rake tasks to import db records and photos
 
     .motorcycles_only
     .vehicles_only
+    .imported_only
     .select_year(year)
     .select_make(make)
     .select_families(family)

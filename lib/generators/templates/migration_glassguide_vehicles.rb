@@ -45,6 +45,7 @@ class CreateGlassguideVehicles < ActiveRecord::Migration
       t.string  :country
       t.string  :released_date
       t.string  :discont_date
+      t.boolean  :imported, :default => false
       t.timestamps
     end    
   end

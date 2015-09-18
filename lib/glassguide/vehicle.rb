@@ -9,7 +9,8 @@ module Glassguide
 
     scope :motorcycles_only,-> {where(:motorcycle => true)}
     scope :vehicles_only,-> {where(:motorcycle => false)} 
-    
+    scope :imported_only,-> {where(:imported => true)} 
+
     scope :select_year ,->(year) {where((year.to_s == 'New') ? ['price_new IS NOT NULL'] : ['year = ? ', year.to_s])}
     scope :select_make ,->(make) {where(:make => make)}    
     scope :select_families ,->(family) {where("family=?", family)}    
@@ -29,7 +30,7 @@ module Glassguide
     scope :list_styles, -> {where("style!=?", "").pluck(:style).uniq.sort}
     scope :list_transmission, -> {where("transmission!=?", "").pluck(:transmission).uniq.sort}
     scope :list_series, -> {where("series!=?", "").pluck(:series).uniq.sort}
-    scope :list_engines, -> {where("engine!=?", "").pluck(:engine, :size, :cyl).collect{|x| x.flatten.join(", ")}.uniq.sort}
+    scope :list_engines, -> {where("engine!=?", "").pluck(:engine, :size, :cyl).collect{|x| x.compact.flatten.join(", ")}.uniq.sort}
 
     def custom_primary_key=(val)
       self[:code] = val

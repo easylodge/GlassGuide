@@ -152,10 +152,20 @@ module Glassguide
               :trade_low => :price_trade_low,
               :trade => :price_trade_in,
               :retail => :price_dealer_retail,
-
-              # imported database
+            
+             # imported database
               :model => :family,
               :engine_type => :engine,
+            }
+
+        when ".U22" #imported
+          import_file file, GLASS_VEHICLE, :find_or_create, [:nvic],
+            :rename_fields => {
+              :"$" => :'price_trade_low',
+              :"$$" => :'price_trade_in',
+              :"$$$" => :'price_dealer_retail',
+              :"cyl." => :cyl,
+              :code => :code, # Get around the no mass assignment on primary key issue
             }
         end
       end
@@ -199,7 +209,7 @@ module Glassguide
 
     def import_file(file, klass, action, keys, options = {})
       motorcycle = file.split('/').last[/^MCG/].present?
-      imported = file.split('/').last[/^IMPOR/].present?
+      imported = file.split('/').last[/^IMP/].present?
 
       progress = 0
       total_lines = `wc -l < #{Shellwords.escape file}`.strip.to_i

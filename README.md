@@ -28,12 +28,16 @@ Fill in Glass Guide details in config/glassguide_config.yml
 
 Then run rake tasks to import db records and photos
 
-    rake glassguide:get_import_data (downloads all the glassguide records and overwrite existing records)
-    rake glassguide:get_import_images (downloads newest images - will overwrite existing)
+    rake glassguide:get_import_data (downloads, unzips and import all the glassguide records and overwrite existing records)
+    rake glassguide:get_import_images (downloads, unzips and import newest images - will overwrite existing)
 
   or both:
 
     rake glassguide:import_all (do both)
+
+  or:
+
+    rake glassguide:import_unzipped_data (import unzipped files from the app_root/glass_temp directory - for importing selected files)  
 
 ## Usage
 

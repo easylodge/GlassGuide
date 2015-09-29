@@ -87,9 +87,17 @@ namespace :glassguide do
 
     puts 'Extracting zip'
     extracted_zip = gp.extract_zip_to_tempdir ENV['FILENAME']
+    
     Glassguide::Loader.new extracted_zip, true
 
     %x{rm "#{ENV['FILENAME']}"}
+    puts 'Done!'
+  end
+
+  desc 'Import unzipped files from glass_temp directory for testing'
+  task :import_unzipped_data => :environment do
+    puts 'Looking for files in "app_root/glass_temp" directory'
+    Glassguide::Loader.new "#{Rails.root}/glass_temp"
     puts 'Done!'
   end
 

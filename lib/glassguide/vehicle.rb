@@ -7,21 +7,22 @@ module Glassguide
     has_one :standard_options, -> {where(rec_type: 'Standard:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
     has_one :optional_options, -> {where(rec_type: 'Optional:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
 
-    scope :motorcycles_only,-> {where(:motorcycle => true)}
-    scope :vehicles_only,-> {where(:motorcycle => false)} 
-    scope :imported_only,-> {where(:imported => true)} 
+    scope :cars_only,-> {where(:vehicle_type => 'car')}
+    scope :motorcycles_only,-> {where(:vehicle_type => 'motorcycle')}
+    scope :trucks_only,-> {where(:vehicle_type => 'truck')}
+    scope :imported_only,-> {where(:imported => true)}
 
     scope :select_year ,->(year) {where((year.to_s == 'New') ? ['price_new IS NOT NULL'] : ['year = ? ', year.to_s])}
-    scope :select_make ,->(make) {where(:make => make)}    
-    scope :select_families ,->(family) {where("family=?", family)}    
-    scope :select_variants ,->(variant) {where(:variant => variant)}    
-    scope :select_styles ,->(style) {where(:style => style)}    
-    scope :select_transmission ,->(transmission) {where(:transmission => transmission)}    
-    scope :select_series ,->(series) {where(:series => series)}    
+    scope :select_make ,->(make) {where(:make => make)}
+    scope :select_families ,->(family) {where("family=?", family)}
+    scope :select_variants ,->(variant) {where(:variant => variant)}
+    scope :select_styles ,->(style) {where(:style => style)}
+    scope :select_transmission ,->(transmission) {where(:transmission => transmission)}
+    scope :select_series ,->(series) {where(:series => series)}
     scope :select_engines ,->(engine) {where(:engine => engine)}
     scope :select_cylinder ,->(cyl) {where(:cyl => cyl)}
     scope :select_size ,->(size) {where(:size => size)}
-    scope :select_vehicle_type ,->(choice) {where(:motorcycle => choice)}   
+    scope :select_vehicle_type ,->(choice) {where(:vehicle_type => choice)}
 
     scope :list_year, -> {where("year!=?", "").pluck(:year).uniq.sort}
     scope :list_make, -> {where("make!=?", "").pluck(:make).uniq.sort}
@@ -35,17 +36,17 @@ module Glassguide
     def custom_primary_key=(val)
       self[:code] = val
     end
-      
-       
-    ##Not Testing due to time moving forward  
+
+
+    ##Not Testing due to time moving forward
     def years_old
       ((Time.now - Date.parse("#{mth} #{year}").to_time).to_f / 1.year).round
     end
 
-    ##Not Testing due to directory not defined in  moving forward 
+    ##Not Testing due to directory not defined in  moving forward
     def photo
       glassguide_details = YAML.load_file("#{Rails.root}/config/glassguide_config.yml")
-      return "/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"    
+      return "/#{glassguide_details['image_directory']}/#{self.nvic}.jpg"
     end
 
     def average_kilometers()
@@ -62,7 +63,7 @@ module Glassguide
       km_category = Glassguide::KilometerVehicle.find(code).km_category
       km_diff = actual - average_kilometers
 
-      max = Glassguide::Kilometer.where(:over_under == direction && :km_category == km_category).sort.last.up_to_kms   
+      max = Glassguide::Kilometer.where(:over_under == direction && :km_category == km_category).sort.last.up_to_kms
       km_diff = (km_diff.abs > max) ? max : km_diff.abs
 
 
@@ -147,7 +148,7 @@ module Glassguide
     end
 
     def deprication_table(kilometers = average_kilometers, do_km_adjustment = true, option_codes = {}, year_new = false)
-    option_codes # needs to be send through as ["NVIC", "TR5", "GARBLE"]
+      # option_codes # needs to be send through as ["NVIC", "TR5", "GARBLE"]
 
       if (!self.price_new.nil? || self.price_new.to_i > 0) && year_new == true
         depreciation_table = {:new_vehicle    => true,
@@ -205,5 +206,3 @@ module Glassguide
 
   end
 end
-
-

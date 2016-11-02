@@ -4,9 +4,10 @@ describe Glassguide::Vehicle do
   # it{expect(subject).to respond_to(:id)}
 
   context "attrs" do
-    it { expect(subject).to respond_to :id } 
+    it { expect(subject).to respond_to :id }
     it { expect(subject).to respond_to :code }
     it { expect(subject).to respond_to :nvic }
+    it { expect(subject).to respond_to :vehicle_type }
     it { expect(subject).to respond_to :mth }
     it { expect(subject).to respond_to :year }
     it { expect(subject).to respond_to :make }
@@ -28,7 +29,6 @@ describe Glassguide::Vehicle do
     it { expect(subject).to respond_to :bt }
     it { expect(subject).to respond_to :et }
     it { expect(subject).to respond_to :tt }
-    it { expect(subject).to respond_to :motorcycle }
     it { expect(subject).to respond_to :valve_gear }
     it { expect(subject).to respond_to :borexstroke }
     it { expect(subject).to respond_to :kw }
@@ -54,19 +54,24 @@ describe Glassguide::Vehicle do
 
   context "scopes" do
     10.times do
-      Glassguide::Vehicle.create(:motorcycle => false)
-      Glassguide::Vehicle.create(:motorcycle => true)
+      Glassguide::Vehicle.create(:vehicle_type => 'car')
+      Glassguide::Vehicle.create(:vehicle_type => 'motorcycle')
+      Glassguide::Vehicle.create(:vehicle_type => 'truck')
     end
 
-    it "for narrowing down to vehicles only" do
-      expect(Glassguide::Vehicle.vehicles_only.count).to eq(10)
+    it "for narrowing down to cars only" do
+      expect(Glassguide::Vehicle.cars_only.count).to eq(10)
     end
 
     it "for narrowing down to motorcycles only" do
       expect(Glassguide::Vehicle.motorcycles_only.count).to eq(10)
     end
 
-    ## motorcycle and vehicles use checks the same field
+    it "for narrowing down to trucks only" do
+      expect(Glassguide::Vehicle.trucks_only.count).to eq(10)
+    end
+
+    ## car, motorcycle and truck use checks the same field
 
     it "for narrowing down by year" do
       10.times do
@@ -241,5 +246,5 @@ describe Glassguide::Vehicle do
       expect(x.deprication_table).to eq({:price_dealer_retail=>15000, :price_private_sale=>13000, :price_trade_in=>11000, :price_trade_low=>10000, :adjust_dealer_retail_amount=>0, :adjust_private_sale_amount=>0, :adjust_trade_in_amount=>0, :adjust_trade_low_amount=>0, :options_dealer_retail_amount=>0, :options_private_sale_amount=>0, :options_trade_in_amount=>0.0, :options_trade_low_amount=>0.0, :adjusted_dealer_retail=>15000, :adjusted_private_sale=>13000, :adjusted_trade_in=>11000.0, :adjusted_trade_low=>10000.0})
     end
 
-  end 
+  end
 end

@@ -43,8 +43,9 @@ Then run rake tasks to import db records and photos
 
 ####Available scopes:
 
+    .cars_only
     .motorcycles_only
-    .vehicles_only
+    .trucks_only
     .imported_only
     .select_year(year)
     .select_make(make)

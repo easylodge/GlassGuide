@@ -157,6 +157,16 @@ module Glassguide
               :model => :family,
               :engine_type => :engine,
             }
+
+        when ".U22" #imported
+          import_file file, GLASS_VEHICLE, :find_or_create, [:nvic],
+            :rename_fields => {
+              :"$" => :'price_trade_low',
+              :"$$" => :'price_trade_in',
+              :"$$$" => :'price_dealer_retail',
+              :"cyl." => :cyl,
+              :code => :code, # Get around the no mass assignment on primary key issue
+            }
         end
       end
 

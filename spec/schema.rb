@@ -18,12 +18,12 @@ ActiveRecord::Schema.define do
     end
 
     create_table :glassguide_option_details,id: false do |t|
-      t.integer :id 
+      t.integer :id
       t.string :code
       t.string :name
       t.timestamps
-    end  
-    
+    end
+
     create_table :glassguide_option_values,id: false  do |t|
       t.integer :id
       t.string :make
@@ -31,7 +31,7 @@ ActiveRecord::Schema.define do
       t.string :option
       t.integer :years_old
       t.integer :adjust_amount
-    end   
+    end
 
     create_table :glassguide_options ,id: false do |t|
       t.integer :id
@@ -40,12 +40,13 @@ ActiveRecord::Schema.define do
       t.string :nvic
       t.string :rec_type
       t.timestamps
-    end 
+    end
 
     create_table :glassguide_vehicles,id: false do |t|
-      t.integer :id 
+      t.integer :id
       t.string  :code, null: true
       t.string  :nvic
+      t.string  :vehicle_type
       t.string  :mth
       t.string  :year
       t.string  :make
@@ -67,7 +68,6 @@ ActiveRecord::Schema.define do
       t.string  :bt
       t.string  :et
       t.string  :tt
-      t.boolean :motorcycle
       t.string  :valve_gear
       t.string  :borexstroke
       t.string  :kw

@@ -152,7 +152,7 @@ module Glassguide
               :trade_low => :price_trade_low,
               :trade => :price_trade_in,
               :retail => :price_dealer_retail,
-            
+
              # imported database
               :model => :family,
               :engine_type => :engine,
@@ -209,6 +209,7 @@ module Glassguide
 
     def import_file(file, klass, action, keys, options = {})
       motorcycle = file.split('/').last[/^MCG/].present?
+      truck = file.split('/').last[/^HCV/].present?
       imported = file.split('/').last[/^IMP/].present?
 
       progress = 0
@@ -227,7 +228,11 @@ module Glassguide
               row[:imported] =  imported if (klass == GLASS_VEHICLE)
               # these are all used vehicles, set price_new to nil
               row[:price_new] = nil if row.has_key?(:price_new)
-              row[:motorcycle] = motorcycle if (klass == GLASS_VEHICLE)
+              if klass == GLASS_VEHICLE
+                row[:vehicle_type] = 'car'
+                row[:vehicle_type] = 'motorcycle' if motorcycle
+                row[:vehicle_type] = 'truck' if truck
+              end
               row[:price_private_sale] = ((row[:price_dealer_retail].to_i - row[:price_trade_in].to_i) / 2) + row[:price_trade_in].to_i if row.has_key?(:price_dealer_retail)
               klass.find_or_create_by row
             when :update

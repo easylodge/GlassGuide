@@ -1,9 +1,10 @@
 class CreateGlassguideVehicles < ActiveRecord::Migration
   def self.up
     create_table :glassguide_vehicles,id: false do |t|
-      t.integer :id 
+      t.integer :id
       t.string  :code, null: true
       t.string  :nvic
+      t.string  :vehicle_type
       t.string  :mth
       t.string  :year
       t.string  :make
@@ -25,7 +26,6 @@ class CreateGlassguideVehicles < ActiveRecord::Migration
       t.string  :bt
       t.string  :et
       t.string  :tt
-      t.boolean :motorcycle
       t.string  :valve_gear
       t.string  :borexstroke
       t.string  :kw
@@ -47,9 +47,9 @@ class CreateGlassguideVehicles < ActiveRecord::Migration
       t.string  :discont_date
       t.boolean  :imported, :default => false
       t.timestamps
-    end    
+    end
   end
-  
+
   def self.down
     drop_table :glassguide_vehicles
   end

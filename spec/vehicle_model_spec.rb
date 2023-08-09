@@ -51,7 +51,7 @@ describe Glassguide::Vehicle do
   end
 
   context "find_by_nvic" do
-    Glassguide::Vehicle.create(:nvic => "Q3N14A")
+    Glassguide::Vehicle.create(nvic: "Q3N14A")
     it "can find record with uppercase nvic" do
       expect(Glassguide::Vehicle.find_by_nvic("Q3N14A")).to_not eq(nil)
     end
@@ -65,10 +65,10 @@ describe Glassguide::Vehicle do
 
   context "scopes" do
     10.times do
-      Glassguide::Vehicle.create(:vehicle_type => 'car')
-      Glassguide::Vehicle.create(:vehicle_type => 'motorcycle')
-      Glassguide::Vehicle.create(:vehicle_type => 'truck')
-      Glassguide::Vehicle.create(:imported => true)
+      Glassguide::Vehicle.create(vehicle_type: 'car')
+      Glassguide::Vehicle.create(vehicle_type: 'motorcycle')
+      Glassguide::Vehicle.create(vehicle_type: 'truck')
+      Glassguide::Vehicle.create(imported: true)
     end
 
     it "for narrowing down to cars only" do
@@ -91,64 +91,64 @@ describe Glassguide::Vehicle do
 
     it "for narrowing down by year" do
       10.times do
-        Glassguide::Vehicle.create(:year => "1990")
-        Glassguide::Vehicle.create(:year => "1992")
-      end
-      expect(Glassguide::Vehicle.select_year("1990").count).to eq(10)
-    end
+            Glassguide::Vehicle.create(year: "1990")
+            Glassguide::Vehicle.create(year: "1992")
+          end
+          expect(Glassguide::Vehicle.select_year("1990").count).to eq(10)
+        end
 
-    it "for narrowing down by make" do
-      10.times do
-        Glassguide::Vehicle.create(:make => "XXY")
-        Glassguide::Vehicle.create(:make => "YXX")
-      end
-      expect(Glassguide::Vehicle.select_make("XXY").count).to eq(10)
-    end
+        it "for narrowing down by make" do
+          10.times do
+            Glassguide::Vehicle.create(make: "XXY")
+            Glassguide::Vehicle.create(make: "YXX")
+          end
+          expect(Glassguide::Vehicle.select_make("XXY").count).to eq(10)
+        end
 
-    it "for narrowing down by family" do
-      10.times do
-        Glassguide::Vehicle.create(:family => "QAZ")
-        Glassguide::Vehicle.create(:family => "ZAQ")
-      end
-      expect(Glassguide::Vehicle.select_families("ZAQ").count).to eq(10)
-    end
+        it "for narrowing down by family" do
+          10.times do
+            Glassguide::Vehicle.create(family: "QAZ")
+            Glassguide::Vehicle.create(family: "ZAQ")
+          end
+          expect(Glassguide::Vehicle.select_families("ZAQ").count).to eq(10)
+        end
 
-    it "for narrowing down by variants" do
-      10.times do
-        Glassguide::Vehicle.create(:variant => "WSX")
-        Glassguide::Vehicle.create(:variant => "XSW")
+        it "for narrowing down by variants" do
+          10.times do
+            Glassguide::Vehicle.create(variant: "WSX")
+            Glassguide::Vehicle.create(variant: "XSW")
       end
       expect(Glassguide::Vehicle.select_variants("WSX").count).to eq(10)
     end
 
     it "for narrowing down by styles" do
       10.times do
-        Glassguide::Vehicle.create(:style => "EDC")
-        Glassguide::Vehicle.create(:style => "CDE")
-      end
-      expect(Glassguide::Vehicle.select_styles("EDC").count).to eq(10)
-    end
+            Glassguide::Vehicle.create(style: "EDC")
+            Glassguide::Vehicle.create(style: "CDE")
+          end
+          expect(Glassguide::Vehicle.select_styles("EDC").count).to eq(10)
+        end
 
-    it "for narrowing down by transmissions" do
-      10.times do
-        Glassguide::Vehicle.create(:transmission => "RFV")
-        Glassguide::Vehicle.create(:transmission => "VFR")
-      end
-      expect(Glassguide::Vehicle.select_transmission("RFV").count).to eq(10)
-    end
+        it "for narrowing down by transmissions" do
+          10.times do
+            Glassguide::Vehicle.create(transmission: "RFV")
+            Glassguide::Vehicle.create(transmission: "VFR")
+          end
+          expect(Glassguide::Vehicle.select_transmission("RFV").count).to eq(10)
+        end
 
-    it "for narrowing down by series" do
-      10.times do
-        Glassguide::Vehicle.create(:series => "TGB")
-        Glassguide::Vehicle.create(:series => "BGT")
-      end
-      expect(Glassguide::Vehicle.select_series("TGB").count).to eq(10)
-    end
+        it "for narrowing down by series" do
+          10.times do
+            Glassguide::Vehicle.create(series: "TGB")
+            Glassguide::Vehicle.create(series: "BGT")
+          end
+          expect(Glassguide::Vehicle.select_series("TGB").count).to eq(10)
+        end
 
-    it "for narrowing down by engines" do
-      10.times do
-        Glassguide::Vehicle.create(:engine => "YHN", :size => "2L", :cyl => "4")
-        Glassguide::Vehicle.create(:engine => "NHY", :size => "3L", :cyl => "6")
+        it "for narrowing down by engines" do
+          10.times do
+            Glassguide::Vehicle.create(engine: "YHN", size: "2L", cyl: "4")
+            Glassguide::Vehicle.create(engine: "NHY", size: "3L", cyl: "6")
       end
       expect(Glassguide::Vehicle.select_engines("YHN").count).to eq(10)
     end
@@ -190,69 +190,151 @@ describe Glassguide::Vehicle do
   context "Functions" do
     it "set custom primary key" do
       #this function is only used for uploading
-      x = Glassguide::Vehicle.create()
-      x.custom_primary_key=("leCode")
-      expect(x.code).to eq("leCode")
+      glass_guide_vehicle = Glassguide::Vehicle.create()
+      glass_guide_vehicle.custom_primary_key=("leCode")
+
+      expect(glass_guide_vehicle.code).to eq("leCode")
     end
 
     it "Test Retrieval Average Kilometers" do
-      #this function is only used for uploading
-      x = Glassguide::Vehicle.create(:code => "ABCDF")
-      Glassguide::KilometerVehicle.create(:code => "ABCDF",:average_kilometers_in_thousands => 10)
-      #This should return the value * 1000 because the column is /1000 of the actual value
-      expect(x.average_kilometers).to eq(10000)
+        # this function is only used for uploading
+        glass_guide_vehicle = Glassguide::Vehicle.create(code: "ABCDF")
+        Glassguide::KilometerVehicle.create(code: "ABCDF", average_kilometers_in_thousands: 10)
+
+        # This should return the value * 1000 because the column is /1000 of the actual value
+        expect(glass_guide_vehicle.average_kilometers).to eq(10_000)
+      end
+
+
+      Glassguide::Kilometer.create(up_to_kms: 10000, over_under: "O", km_category: "A", adjust_amount: 700)
+      Glassguide::Kilometer.create(up_to_kms: 15000, over_under: "O", km_category: "A", adjust_amount: 900)
+
+      Glassguide::Kilometer.create(up_to_kms: 10000, over_under: "U", km_category: "A", adjust_amount: 500)
+      Glassguide::Kilometer.create(up_to_kms: 15000, over_under: "U", km_category: "A", adjust_amount: 400)
+
+
+      it "Test Kilometer adjustment -- with no paramters" do
+        glass_guide_vehicle = Glassguide::Vehicle.create(code: "QWERT")
+        Glassguide::KilometerVehicle.create(code: "QWERT", km_category: "A", average_kilometers_in_thousands: 10)
+
+        expect(glass_guide_vehicle.kilometer_adjustment).to eq(0)
+      end
+
+      it "Test Kilometer adjustment -- with km above the average paramters" do
+        glass_guide_vehicle = Glassguide::Vehicle.create(code: "ASDFG")
+        Glassguide::KilometerVehicle.create(code: "ASDFG", km_category: "A", average_kilometers_in_thousands: 10)
+
+        expect(glass_guide_vehicle.kilometer_adjustment(60_000)).to eq(-900)
+      end
+
+      it "Test Kilometer adjustment -- with km below the average paramters" do
+        glass_guide_vehicle = Glassguide::Vehicle.create(code: "ZXCV")
+        Glassguide::KilometerVehicle.create(code: "ZXCV", km_category: "A", average_kilometers_in_thousands: 10)
+
+        expect(glass_guide_vehicle.kilometer_adjustment(5000)).to eq(500)
+      end
+
+    it "Test deprication table -- With Option Codes and with Kilometer Adjustment" do
+      year = Date.today - 9.years
+      glass_guide_vehicle = Glassguide::Vehicle.create(
+        code: "PLM12",
+        year: year.year,
+        mth: year.strftime("%b"),
+        price_dealer_retail: 15_000,
+        price_private_sale: 13_000,
+        price_trade_in: 11_000,
+        price_trade_low: 10_000
+      )
+      Glassguide::KilometerVehicle.create(code: "PLM12", km_category: "A", average_kilometers_in_thousands: 10)
+      Glassguide::KilometerVehicle.create(code: "PLM13", km_category: "B", average_kilometers_in_thousands: 10)
+      Glassguide::OptionValue.create(option: "AP", years_old: 9, adjust_amount: 200)
+      Glassguide::OptionValue.create(option: "AW18", years_old: 9, adjust_amount: 700)
+      Glassguide::OptionValue.create(option: "LP", years_old: 9, adjust_amount: 300)
+      Glassguide::OptionValue.create(option: "AP7", years_old: 9, adjust_amount: 900)
+
+
+      expect(glass_guide_vehicle.deprication_table(17_000, true, ["AP", "AW18", "LP"])).to eq({
+        price_dealer_retail: 15_000,
+        price_private_sale: 13_000,
+        price_trade_in: 11_000,
+        price_trade_low: 10_000,
+        adjust_dealer_retail_amount: -700,
+        adjust_private_sale_amount: -700,
+        adjust_trade_in_amount: -350.0,
+        adjust_trade_low_amount: -210.0,
+        options_dealer_retail_amount: 1_200,
+        options_private_sale_amount: 1_200,
+        options_trade_in_amount: 600.0,
+        options_trade_low_amount: 360.0,
+        adjusted_dealer_retail: 15_500,
+        adjusted_private_sale: 13_500,
+        adjusted_trade_in: 11_250.0,
+        adjusted_trade_low: 10_150.0
+      })
     end
 
+    it "Test deprication table -- With Option Codes and with Kilometer Adjustment", :focus do
+      year = Date.today - 9.years
+      glass_guide_vehicle = Glassguide::Vehicle.create(
+        code: "PLM12",
+        year: year.year,
+        mth: year.strftime("%b"),
+        price_dealer_retail: 15_000,
+        price_private_sale: 13_000,
+        price_trade_in: 11_000,
+        price_trade_low: 10_000
+      )
 
-      Glassguide::Kilometer.create(:up_to_kms => 10000, :over_under => "O", :km_category => "A", :adjust_amount => 700 )
-      Glassguide::Kilometer.create(:up_to_kms => 15000, :over_under => "O", :km_category => "A", :adjust_amount => 900 )
-
-      Glassguide::Kilometer.create(:up_to_kms => 10000, :over_under => "U", :km_category => "A", :adjust_amount => 500 )
-      Glassguide::Kilometer.create(:up_to_kms => 15000, :over_under => "U", :km_category => "A", :adjust_amount => 400 )
-
-
-    it "Test Kilometer adjustment -- with no paramters" do
-      x = Glassguide::Vehicle.create(:code => "QWERT")
-      Glassguide::KilometerVehicle.create(:code => "QWERT", :km_category => "A", :average_kilometers_in_thousands => 10)
-      expect(x.kilometer_adjustment).to eq(0)
-    end
-
-    it "Test Kilometer adjustment -- with km above the average paramters" do
-      x = Glassguide::Vehicle.create(:code => "ASDFG")
-      Glassguide::KilometerVehicle.create(:code => "ASDFG", :km_category => "A", :average_kilometers_in_thousands => 10)
-      expect(x.kilometer_adjustment(60000)).to eq(-900)
-    end
-
-    it "Test Kilometer adjustment -- with km below the average paramters" do
-      x = Glassguide::Vehicle.create(:code => "ZXCV")
-      Glassguide::KilometerVehicle.create(:code => "ZXCV", :km_category => "A", :average_kilometers_in_thousands => 10)
-      expect(x.kilometer_adjustment(5000)).to eq(500)
+      expect(glass_guide_vehicle.deprication_table(21_000, true, [])).to eq({
+        price_dealer_retail: 15_000,
+        price_private_sale: 13_000,
+        price_trade_in: 11_000,
+        price_trade_low: 10_000,
+        adjust_dealer_retail_amount: -900,
+        adjust_private_sale_amount: -900,
+        adjust_trade_in_amount: -450.0,
+        adjust_trade_low_amount: -270.0,
+        options_dealer_retail_amount: 0,
+        options_private_sale_amount: 0,
+        options_trade_in_amount: 0.0,
+        options_trade_low_amount: 0.0,
+        adjusted_dealer_retail: 14_100,
+        adjusted_private_sale: 12_100,
+        adjusted_trade_in: 10_550.0,
+        adjusted_trade_low: 9730.0
+      })
     end
 
     it "Test deprication table -- With Option Codes and with Kilometer Adjustment" do
-      y = Date.today - 9.years
-      x = Glassguide::Vehicle.create(:code => "PLM12", :year => y.year, :mth => y.strftime("%b"), :price_dealer_retail => 15000, :price_private_sale => 13000, :price_trade_in => 11000, :price_trade_low => 10000 )
-      Glassguide::KilometerVehicle.create(:code => "PLM12", :km_category => "A", :average_kilometers_in_thousands => 10)
-      Glassguide::KilometerVehicle.create(:code => "PLM13", :km_category => "B", :average_kilometers_in_thousands => 10)
-      Glassguide::OptionValue.create(:option => "AP", :years_old => 9, :adjust_amount => 200)
-      Glassguide::OptionValue.create(:option => "AW18", :years_old => 9, :adjust_amount => 700)
-      Glassguide::OptionValue.create(:option => "LP", :years_old => 9, :adjust_amount => 300)
-      Glassguide::OptionValue.create(:option => "AP7", :years_old => 9, :adjust_amount => 900)
+      year = Date.today - 9.years
+      glass_guide_vehicle = Glassguide::Vehicle.create(
+        code: "PLM12",
+        year: year.year,
+        mth: year.strftime("%b"),
+        price_dealer_retail: 15_000,
+        price_private_sale: 13_000,
+        price_trade_in: 11_000,
+        price_trade_low: 10_000
+      )
 
-
-      expect(x.deprication_table(17000, true, ["AP", "AW18", "LP"])).to eq({:price_dealer_retail=>15000, :price_private_sale=>13000, :price_trade_in=>11000, :price_trade_low=>10000, :adjust_dealer_retail_amount=>-700, :adjust_private_sale_amount=>-700, :adjust_trade_in_amount=>-350.0, :adjust_trade_low_amount=>-210.0, :options_dealer_retail_amount=>1200, :options_private_sale_amount=>1200, :options_trade_in_amount=>600.0, :options_trade_low_amount=>360.0, :adjusted_dealer_retail=>15500, :adjusted_private_sale=>13500, :adjusted_trade_in=>11250.0, :adjusted_trade_low=>10150.0})
-    end
-
-    it "Test deprication table -- With Option Codes and with Kilometer Adjustment" do
-      y = Date.today - 9.years
-      x = Glassguide::Vehicle.create(:code => "PLM12", :year => y.year, :mth => y.strftime("%b"), :price_dealer_retail => 15000, :price_private_sale => 13000, :price_trade_in => 11000, :price_trade_low => 10000 )
-      expect(x.deprication_table(21000, true)).to eq({:price_dealer_retail=>15000, :price_private_sale=>13000, :price_trade_in=>11000, :price_trade_low=>10000, :adjust_dealer_retail_amount=>-900, :adjust_private_sale_amount=>-900, :adjust_trade_in_amount=>-450.0, :adjust_trade_low_amount=>-270.0, :options_dealer_retail_amount=>0, :options_private_sale_amount=>0, :options_trade_in_amount=>0.0, :options_trade_low_amount=>0.0, :adjusted_dealer_retail=>14100, :adjusted_private_sale=>12100, :adjusted_trade_in=>10550.0, :adjusted_trade_low=>9730.0})
-    end
-
-    it "Test deprication table -- With Option Codes and with Kilometer Adjustment" do
-      y = Date.today - 9.years
-      x = Glassguide::Vehicle.create(:code => "PLM12", :year => y.year, :mth => y.strftime("%b"), :price_dealer_retail => 15000, :price_private_sale => 13000, :price_trade_in => 11000, :price_trade_low => 10000 )
-      expect(x.deprication_table).to eq({:price_dealer_retail=>15000, :price_private_sale=>13000, :price_trade_in=>11000, :price_trade_low=>10000, :adjust_dealer_retail_amount=>0, :adjust_private_sale_amount=>0, :adjust_trade_in_amount=>0, :adjust_trade_low_amount=>0, :options_dealer_retail_amount=>0, :options_private_sale_amount=>0, :options_trade_in_amount=>0.0, :options_trade_low_amount=>0.0, :adjusted_dealer_retail=>15000, :adjusted_private_sale=>13000, :adjusted_trade_in=>11000.0, :adjusted_trade_low=>10000.0})
+      expect(glass_guide_vehicle.deprication_table(nil, nil, [])).to eq({
+        price_dealer_retail: 15_000.0,
+        price_private_sale: 13_000.0,
+        price_trade_in: 11_000.0,
+        price_trade_low: 10_000.0,
+        adjust_dealer_retail_amount: 500.0,
+        adjust_private_sale_amount: 500.0,
+        adjust_trade_in_amount: 0.0,
+        adjust_trade_low_amount: 0.0,
+        options_dealer_retail_amount: 0.0,
+        options_private_sale_amount: 0.0,
+        options_trade_in_amount: 0.0,
+        options_trade_low_amount: 0.0,
+        adjusted_dealer_retail: 15_500.0,
+        adjusted_private_sale: 13_500.0,
+        adjusted_trade_in: 11_000.0,
+        adjusted_trade_low: 10_000.0
+      })
     end
 
   end

@@ -8,7 +8,7 @@ gem "activesupport"
 
 group :development, :test do
   gem 'sqlite3'
-  gem 'rspec-rails', '~> 3.0.0.beta'
+  gem 'rspec-rails'
   gem 'factory_girl_rails'
-  # gem 'rails', "~> 4.0.0"
+  gem 'rails', "~> 7.0.0"
 end

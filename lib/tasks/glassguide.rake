@@ -1,6 +1,6 @@
 require 'glassguide'
 require 'fileutils'
-require 'net/ftp'
+require 'net/sftp'
 
 namespace :glassguide do
   # task :import_all => :environment do #this needs to run with cron job once a month maby?
@@ -15,23 +15,37 @@ namespace :glassguide do
 
   desc 'Runs both the glasses guide tasks(glassguide:get_import_images, glassguide:get_import_data) to update images and data'
   task :import_all => :environment do #this needs to run with cron job once a month maby?
-    Rake::Task['glassguide:get_import_images'].invoke
+    # Rake::Task['glassguide:get_import_images'].invoke <- disabled no images at this st
     Rake::Task['glassguide:get_import_data'].invoke
   end
 
   desc 'Downloads the most recent photo zip file, unzip and store on image save location'
   task :get_import_images => :environment do
-    
-    ftp = Net::FTP.new(@login["glassguide_url"])
-    ftp.passive=true
-    
-    if ftp.login(@login["glassguide_photo_login"]["username"],@login["glassguide_photo_login"]["password"])
+    Net::SFTP.start(@login["glassguide_url"], @login["glassguide_photo_login"]["username"], password: @login["glassguide_photo_login"]["password"]) do |sftp|
       p "Logged in to #{@login['glassguide_url']}"
       filename = "Photo_" + Date.today.strftime("%b%y") + ".zip"
-      remote_file = ftp.nlst.reject{|r| r != filename}.first
-      if remote_file
-        p "Downloading #{filename} (#{remote_file.size*1024}kb)"
-        ftp.getbinaryfile(filename)
+      
+      begin
+        # Check if file exists on SFTP server
+        file_attrs = sftp.stat!(filename)
+        p "Downloading #{filename} (#{file_attrs.size/1024}kb)"
+        
+        # Use non-blocking download with progress reporting
+        local_path = "#{Rails.root}/#{filename}"
+        sftp.download!(filename, local_path) do |event, downloader, *args|
+          case event
+          when :open then
+            p "Starting download..."
+          when :get then
+            p "Downloaded #{args[1]} bytes" if args[1] % (1024 * 100) == 0  # Progress every 100KB
+          when :close then
+            p "Download completed"
+          when :mkdir then
+            p "Creating directory #{args[0]}"
+          when :finish then
+            p "Download finished"
+          end
+        end
 
         file_path = Pathname.new("#{Rails.root}/#{filename}")
         if file_path.exist?
@@ -52,45 +66,36 @@ namespace :glassguide do
         else
           p "Download Failed!"
         end
-      else
-        p "#{filename} not found on ftp server"
+      rescue Net::SFTP::StatusException => e
+        if e.code == 2  # File not found
+          p "#{filename} not found on SFTP server"
+        else
+          p "SFTP error: #{e.message}"
+        end
       end
-    else
-      p "FTP login has failed!"
     end
-    ftp.close
-    p "Closing FTP connection"
+    p "Closing SFTP connection"
+  rescue Net::SSH::AuthenticationFailed => e
+    p "SFTP login has failed: #{e.message}"
+  rescue => e
+    p "SFTP connection error: #{e.message}"
   end
 
   desc 'Downloads the most recent data zip files, unzip and merge'
   task :get_import_data => :environment do
+    # download file from sftp server
+    zip_file = Date.today.strftime("%b%y") + "eis.zip"
+    zip_file_dest_folder = Pathname.new("#{Rails.root}/#{Date.today.strftime('%b%y') + "eis_#{@login['glassguide_photo_login']['username']}"}")
     
-    # downloading required files
-    ftp_request(@login["glassguide_url"], @login["glassguide_photo_login"]["username"], @login["glassguide_photo_login"]["password"])
-    ftp_request(@login["glassguide_url"], @login["glassguide_extra_login"]["username"], @login["glassguide_extra_login"]["password"])
-
-    # merging downloaded files
-    first_folder_name = Date.today.strftime('%b%y') + "eis_#{@login['glassguide_photo_login']['username']}"
-    first_folder_path = Pathname.new("#{Rails.root}/#{first_folder_name}")
-
-    p "Combining files"
-    combine_files(first_folder_name, first_folder_path)    
-
-    p "Zipping combined folder #{first_folder_name}"
-    %x{cd "#{first_folder_path}" && zip -r "#{Rails.root}/#{Date.today.strftime('%b%y')}"eis.zip .} #zipping the folder aswell as the files, only want to zip the folder content
-
-    p "Removing combined folder #{first_folder_name}"
-    %x{rm -rf "#{first_folder_name}"}
-
-    ENV['FILENAME'] = "#{Rails.root}/#{Date.today.strftime('%b%y')}eis.zip"
-    gp = Object.new.send :extend, Glassguide::Package
-
-    puts 'Extracting zip'
-    extracted_zip = gp.extract_zip_to_tempdir ENV['FILENAME']
+    sftp_request(
+      @login["glassguide_url"], 
+      @login["glassguide_photo_login"]["username"], 
+      @login["glassguide_photo_login"]["password"], 
+      zip_file, zip_file_dest_folder
+    )
     
-    Glassguide::Loader.new extracted_zip, true
-
-    %x{rm "#{ENV['FILENAME']}"}
+    Glassguide::Loader.new zip_file_dest_folder, true
+    %x{rm -r "#{zip_file_dest_folder}"}
     puts 'Done!'
   end
 
@@ -101,24 +106,38 @@ namespace :glassguide do
     puts 'Done!'
   end
 
-  def ftp_request(url, username, password)
-      ftp = Net::FTP.new(url)
-      ftp.passive=true
-      if ftp.login(username, password)
-        p "Logged in to ftp.glassguide.com.au (#{username})"
-        filename = Date.today.strftime("%b%y") + "eis.zip"
-        remote_file = ftp.nlst.reject{|r| r != filename}.first
-        if remote_file
-          p "Downloading #{filename} (#{remote_file.size*1024}kb)"
-          ftp.getbinaryfile(filename)
+  def sftp_request(url, username, password, filename, zip_file_dest_folder)
+      Net::SFTP.start(url, username, password: password) do |sftp|
+        p "Logged in to #{url} (#{username})"
+        begin
+          # Check if file exists on SFTP server
+          file_attrs = sftp.stat!(filename)
+          p "Downloading #{filename} (#{file_attrs.size/1024}kb)"
+          
+          # Use non-blocking download with progress reporting
+          local_path = "#{Rails.root}/#{filename}"
+          sftp.download!(filename, local_path) do |event, downloader, *args|
+            case event
+            when :open then
+              p "Starting download..."
+            when :get then
+              p "Downloaded #{args[1]} bytes" if args[1] % (1024 * 100) == 0  # Progress every 100KB
+            when :close then
+              p "Download completed"
+            when :mkdir then
+              p "Creating directory #{args[0]}"
+            when :finish then
+              p "Download finished"
+            end
+          end
 
           zip_file_path = Pathname.new("#{Rails.root}/#{filename}")
           if zip_file_path.exist?
             p "Download OK!"
 
-            p "Unzipping #{filename} to #{filename.split('.').first}_#{username}"
-            %x{unzip -o "#{zip_file_path}" -d "#{filename.split('.').first}_#{username}"}
-            unzipped_folder = Pathname.new("#{Rails.root}/#{filename.split('.').first}_#{username}/")
+            p "Unzipping #{filename} to #{zip_file_dest_folder}"
+            %x{unzip -o "#{zip_file_path}" -d "#{zip_file_dest_folder}"}
+            unzipped_folder = Pathname.new(zip_file_dest_folder)
 
             if unzipped_folder.exist?
               p "Unzip OK!"
@@ -130,14 +149,19 @@ namespace :glassguide do
           else
             p "Download Failed!"
           end
-        else
-          p "#{filename} not found on ftp server"
+        rescue Net::SFTP::StatusException => e
+          if e.code == 2  # File not found
+            p "#{filename} not found on SFTP server"
+          else
+            p "SFTP error: #{e.message}"
+          end
         end
-      else
-        p "Ftp login has failed"
       end
-      ftp.close
-      p "Closing FTP connection"
+      p "Closing SFTP connection"
+    rescue Net::SSH::AuthenticationFailed => e
+      p "SFTP login has failed: #{e.message}"
+    rescue => e
+      p "SFTP connection error: #{e.message}"
     end
 
     def combine_files(first_folder_name, first_folder_path)

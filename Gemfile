@@ -5,6 +5,7 @@ gemspec
 
 gem "rubyzip"
 gem "activesupport"
+gem "net-sftp"
 
 group :development, :test do
   gem 'sqlite3'

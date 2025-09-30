@@ -3,7 +3,7 @@ module Glassguide
     self.table_name = "glassguide_vehicles"
     self.primary_key = :code
 
-    validates :code, uniqueness: true
+    validates :crc_hash, presence: true, uniqueness: true
     
     has_many :options, :class_name => "Glassguide::Option", :foreign_key => "vehicle_code"
     has_one :standard_options, -> {where(rec_type: 'Standard:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"

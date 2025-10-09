@@ -3,6 +3,8 @@ module Glassguide
     self.table_name = "glassguide_vehicles"
     self.primary_key = :code
 
+    validates :code, uniqueness: true
+    
     has_many :options, :class_name => "Glassguide::Option", :foreign_key => "vehicle_code"
     has_one :standard_options, -> {where(rec_type: 'Standard:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
     has_one :optional_options, -> {where(rec_type: 'Optional:')},class_name: "Glassguide::Option", foreign_key: "vehicle_code"
@@ -32,7 +34,7 @@ module Glassguide
     scope :list_transmission, -> {where("transmission!=?", "").pluck(:transmission).uniq.sort}
     scope :list_series, -> {where("series!=?", "").pluck(:series).uniq.sort}
     scope :list_engines, -> {where("engine!=?", "").pluck(:engine, :size, :cyl).collect{|x| x.compact.flatten.join(", ")}.uniq.sort}
-
+    
     def custom_primary_key=(val)
       self[:code] = val
     end

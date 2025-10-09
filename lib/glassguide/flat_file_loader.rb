@@ -80,13 +80,14 @@ module Glassguide
 
           # Create temporary table with same structure and indexes (but no data)
           ActiveRecord::Base.connection.execute "CREATE TABLE #{temp_table_name} (LIKE #{orig_table_name})"
-          # ActiveRecord::Base.connection.execute "INSERT #{temp_table_name} SELECT * FROM #{orig_table_name} WHERE 0"
-          # temp_index_count = ActiveRecord::Base.connection.execute("SHOW INDEXES FROM #{temp_table_name}").to_a.count
-
-          # unless orig_index_count == temp_index_count
-            # raise "Index count mismatch between #{orig_table_name} and #{temp_table_name}"
-          # end
-
+          
+          # Copy indexes from original table to temporary table
+          if klass == GLASS_VEHICLE
+            # Drop index if it exists, then create it
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_code"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_code ON #{temp_table_name} (code)"
+          end
+          
           klass.table_name = temp_table_name
         end
       end
@@ -215,105 +216,83 @@ module Glassguide
       progress = 0
       total_lines = `wc -l < #{Shellwords.escape file}`.strip.to_i
 
-      parse_file(file, options).each_slice 1000 do |rows|
-        progress += 1000
-        p "#{progress} / #{total_lines}"
-        klass.transaction do
-          rows.each do |row|
-            case action
-            when :find_or_create
-              # set year to current year if nil
-              row[:year] = DateTime.now.year.to_s if (!row.has_key?(:year) && (klass == GLASS_VEHICLE))
-              row[:mth] =  DateTime.now.strftime("%b") if (!row.has_key?(:mth) && (klass == GLASS_VEHICLE))
-              row[:imported] =  imported if (klass == GLASS_VEHICLE)
-              # these are all used vehicles, set price_new to nil
-              row[:price_new] = nil if row.has_key?(:price_new)
-              if klass == GLASS_VEHICLE
-                row[:vehicle_type] = 'car'
-                row[:vehicle_type] = 'motorcycle' if motorcycle
-                row[:vehicle_type] = 'truck' if truck
+      parse_file(file, klass, options) do |data_rows|
+        data_rows.each_slice(1_000) do |rows|
+          progress += 1_000
+          p "#{progress} / #{total_lines}"
+          p "writing... #{klass.name}"
+          case klass.name
+          when "Glassguide::Loader::GLASS_VEHICLE"
+            unique_rows = rows.uniq { |row| row[:code] }
+            klass.upsert_all(unique_rows, unique_by: [:code])
+          when "Glassguide::Loader::GLASS_OPTION"
+            klass.create rows
+          when "Glassguide::Loader::GLASS_OPTION_DETAIL"
+            klass.create rows
+          when "Glassguide::Loader::GLASS_KILOMETRES_VEHICLE"
+            klass.create rows
+          else
+            klass.transaction do
+              rows.each do |row|
+                klass.find_or_create_by row  
               end
-              row[:price_private_sale] = ((row[:price_dealer_retail].to_i - row[:price_trade_in].to_i) / 2) + row[:price_trade_in].to_i if row.has_key?(:price_dealer_retail)
-              klass.find_or_create_by row
-            when :update
-              # updates only on new vehicles
-              #filter by keys
-              tmp_row = row.select{|k,v| keys.include? k}
-              record = klass.find_by tmp_row
-              record.update_attributes! row
-            else
-              raise "Invalid action: #{action}"
             end
           end
         end
       end
     end
 
-    def parse_file(file, options = {}, &block)
-      unless block_given?
-        return self.enum_for(:parse_file, file, options)
-      end
+    def parse_file(file, klass, options = {})
+      lines = File.readlines(file, chomp: true)
 
-      @filename = File.basename(file)
-      options = {
-        :rename_fields => {},
-        :lines => 0,
-        :after => {}
-      }.update(options)
+      header_line = lines[0]
+      index_line  = lines[1]
+      separator   = lines[2]
+      data_lines  = lines[3..]
 
-      fields = []
-      field_pattern = ""
-      field_names = ""
-      current_line = 0
+      # Get column positions from index line
+      positions = index_line.scan(/\d+/).map(&:to_i)
 
-      File.foreach(file) do |line|
-        current_line += 1
+      # Build column ranges
+      ranges = positions.each_cons(2).map { |a, b| (a - 1)...(b - 1) }
+      ranges << ((positions.last - 1)..-1)
 
-        # Get field sizes
-        if current_line == 1
-          field_names = line
+      # Extract headers using the same ranges
+      headers = ranges.map { |range| header_line[range].to_s.strip }
 
-        elsif current_line == 2
-          chr_ids = line.gsub(/([ ]+)/," ").split(/([^0-9]+)/).collect(&:to_i).reject(&:zero?)
-          chr_ids << line.size
+      motorcycle = file.split('/').last[/^MCG/].present?
+      truck = file.split('/').last[/^HCV/].present?
+      imported = file.split('/').last[/^IMP/].present?
 
-          chr_ids.each_with_index do |ci, index|
-            segment = ci.to_i - chr_ids[index+1] unless chr_ids[index+1].nil?
-            if segment
-              fields << segment.abs
-            end
+      valid_columns = klass.column_names.map(&:to_sym)
+
+      parsed_data = data_lines.map do |line|
+        row = {}
+        headers.each_with_index do |header, i|
+          raw = line[ranges[i]] || ""
+          key = header.downcase.gsub(" ", "_").to_sym
+          # so we only store support column keys
+          if options&.dig(:rename_fields, key)
+            row[options[:rename_fields][key]] = raw.strip.empty? ? "-" : raw.strip
           end
-          field_pattern = "A#{fields.join('A')}"
-          field_names = field_names.unpack(field_pattern).collect(&:dash_blank!).collect{ |field| field.strip.gsub(/ /, "_") }.collect(&[:strip, :downcase, :to_sym])
-          field_names.collect! do |field|
-            options[:rename_fields][field].nil? ? field : options[:rename_fields][field]
+          if valid_columns.include?(key) && key.present?
+            row[key] = raw.strip.empty? ? "-" : raw.strip
           end
         end
 
-        # Next lines contain data
-        start_line = 3
-        if current_line > start_line
-          return if current_line < start_line + options[:lines] && options[:lines] > 0
-
-          row_hash = {}
-          row = line.unpack(field_pattern)
-          row.collect!(&[:dash_blank!, :strip])
-
-          field_names.each_with_index do |field, index|
-            row[index] = "(No #{field.to_s})" if row[index].to_s.strip == "-"
-            if options[:after][field.to_sym]
-              row[index].send(options[:after][field.to_sym])
-            end
-            row_hash.merge!(field => row[index].to_s.strip) unless field == :-
-          end
-
-          yield row_hash if block_given?
+        row[:price_new] = nil if row.has_key?(:price_new)
+        if klass == GLASS_VEHICLE
+          row[:year] = row.has_key?(:year) ? row[:year] : DateTime.now.year.to_s
+          row[:mth] = row.has_key?(:mth) ? row[:mth] : DateTime.now.strftime("%b")
+          row[:imported] =  imported
+          row[:vehicle_type] = 'car'
+          row[:vehicle_type] = 'motorcycle' if motorcycle
+          row[:vehicle_type] = 'truck' if truck
         end
-        # progress_bar.inc if @verbose
+        row
       end
-      # progress_bar.finish if @verbose
-    rescue => e
-      append_log "Error: #{e.message}\n\t#{e.backtrace.join "\n\t"}"
+
+      yield parsed_data if block_given?
     end
 
     def temp_table_name(table_name)

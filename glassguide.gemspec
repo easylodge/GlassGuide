@@ -14,6 +14,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency "rubyzip"
   gem.add_dependency 'activesupport'
+  gem.add_dependency 'net-sftp'
 
   gem.add_development_dependency "sqlite3"
   gem.add_development_dependency "rspec-rails", '~> 3.0.0.beta1'

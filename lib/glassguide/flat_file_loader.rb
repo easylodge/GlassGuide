@@ -1,3 +1,4 @@
+require "digest"
 # encoding: utf-8
 ['pathname', 'zip'].each {|x| require x}
 module Glassguide
@@ -84,9 +85,33 @@ module Glassguide
           # Copy indexes from original table to temporary table
           if klass == GLASS_VEHICLE
             # Drop index if it exists, then create it
-            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_code"
-            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_code ON #{temp_table_name} (code)"
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_crc_hash"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_crc_hash ON #{temp_table_name} (crc_hash)"
           end
+
+          if klass == GLASS_OPTION 
+            # Drop index if it exists, then create it
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_crc_hash"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_crc_hash ON #{temp_table_name} (crc_hash)"
+          end
+
+          if klass == GLASS_OPTION_DETAIL
+            # Drop index if it exists, then create it
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_crc_hash"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_crc_hash ON #{temp_table_name} (crc_hash)"
+          end 
+
+          if klass == GLASS_KILOMETRES 
+            # Drop index if it exists, then create it
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_crc_hash"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_crc_hash ON #{temp_table_name} (crc_hash)" 
+          end
+
+          if klass == GLASS_KILOMETRES_VEHICLE
+            # Drop index if it exists, then create it
+            ActiveRecord::Base.connection.execute "DROP INDEX IF EXISTS index_#{temp_table_name}_on_crc_hash"
+            ActiveRecord::Base.connection.execute "CREATE UNIQUE INDEX index_#{temp_table_name}_on_crc_hash ON #{temp_table_name} (crc_hash)" 
+          end 
           
           klass.table_name = temp_table_name
         end
@@ -221,23 +246,7 @@ module Glassguide
           progress += 1_000
           p "#{progress} / #{total_lines}"
           p "writing... #{klass.name}"
-          case klass.name
-          when "Glassguide::Loader::GLASS_VEHICLE"
-            unique_rows = rows.uniq { |row| row[:code] }
-            klass.upsert_all(unique_rows, unique_by: [:code])
-          when "Glassguide::Loader::GLASS_OPTION"
-            klass.create rows
-          when "Glassguide::Loader::GLASS_OPTION_DETAIL"
-            klass.create rows
-          when "Glassguide::Loader::GLASS_KILOMETRES_VEHICLE"
-            klass.create rows
-          else
-            klass.transaction do
-              rows.each do |row|
-                klass.find_or_create_by row  
-              end
-            end
-          end
+          klass.upsert_all(rows, unique_by: [:crc_hash])
         end
       end
     end
@@ -289,6 +298,8 @@ module Glassguide
           row[:vehicle_type] = 'motorcycle' if motorcycle
           row[:vehicle_type] = 'truck' if truck
         end
+        # signatur per object
+        row[:crc_hash] = Digest::MD5.hexdigest(row.to_json)
         row
       end
 
